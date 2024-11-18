@@ -95,7 +95,14 @@ SouthFeasts akan menggunakan dataset makanan dan restoran di Jakarta Selatan. Da
 
 [Dataset Makanan](./dataset/dataset_makanan.csv)
 
----
+## Alur Pengintegrasian dengan _web service_
 
+Untuk menghubungkan aplikasi Flutter kita dengan Django, kita akan:
+
+1. Menambahkan fitur pada aplikasi Flutter agar bisa berkomunikasi dengan server Django. Kami akan menggunakan paket http untuk mengirim dan menerima data.
+2. Kami akan menggunakan sistem login, logout, dan registrasi yang sudah ada di Django untuk mengontrol akses pengguna. Hanya pengguna yang sudah login dan memiliki peran tertentu (misalnya, logged in user atau admin) yang bisa mengakses data tertentu.
+3. Kami akan menggunakan paket pbp_django_auth untuk menyimpan informasi login pengguna dalam bentuk cookie. Dengan begitu, setiap permintaan yang dikirimkan dari Flutter ke Django akan otomatis membawa informasi login pengguna.
+4. Kami akan membuat sebuah kelas di Flutter bernama Katalog untuk menampilkan daftar makanan. Data makanan ini akan diambil dari API Django yang kita buat menggunakan products/fixtures/data.json. Untuk memudahkan dalam memproses data JSON yang didapatkan dari API, kita akan menggunakan https://app.quicktype.io/ untuk mengubahnya menjadi format yang bisa langsung digunakan di Dart.
+   
 Selamat menjelajahi kelezatan Jakarta Selatan bersama SouthFeasts! 🍽️🌆
 

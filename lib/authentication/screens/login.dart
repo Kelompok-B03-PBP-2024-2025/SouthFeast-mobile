@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 // TODO: Import halaman RegisterPage jika sudah dibuat
 import 'package:southfeast_mobile/authentication/screens/register.dart';
 import 'package:southfeast_mobile/screens/root_page.dart';
+
 void main() {
   runApp(const LoginApp());
 }
@@ -99,10 +100,13 @@ class _LoginPageState extends State<LoginPage> {
                       String username = _usernameController.text;
                       String password = _passwordController.text;
 
-                      // Cek kredensial
-                      // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
-                      // Untuk menyambungkan Android emulator dengan Django pada localhost,
-                      // gunakan URL http://10.0.2.2/
+
+                      // gunakan URL http://10.0.2.2/ buat emulator Android Studio
+                      // final response = await request
+                      //     .login("http://10.0.2.2:8000/auth/api/login/", {
+                      //   'username': username,
+                      //   'password': password,
+                      // });
                       final response = await request
                           .login("http://127.0.0.1:8000/auth/api/login/", {
                         'username': username,
@@ -119,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                               builder: (context) => RootPage(
                                 isStaff: response['is_staff'],
                                 isAuthenticated: true,
-                                username: uname,  // Add this
+                                username: uname, // Add this
                               ),
                             ),
                           );

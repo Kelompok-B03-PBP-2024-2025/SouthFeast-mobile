@@ -8,7 +8,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Function() onAuthStateChanged;
 
   const GlobalAppBar({
-    super.key, 
+    super.key,
     required this.isAuthenticated,
     required this.onAuthStateChanged,
   });
@@ -16,7 +16,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
-    
+
     return AppBar(
       // Add leading drawer icon
       leading: IconButton(
@@ -44,8 +44,11 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () async {
             if (isAuthenticated) {
               try {
-                final response = await request.logout(
-                    "http://127.0.0.1:8000/auth/api/logout/");
+                // final response = await request
+                //     .logout("http://10.0.2.2:8000/auth/api/logout/");
+                // String message = response["message"];
+                final response = await request
+                    .logout("http://127.0.0.1:8000/auth/api/logout/");
                 String message = response["message"];
                 if (context.mounted) {
                   if (response['status']) {
@@ -56,7 +59,8 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
                     onAuthStateChanged();
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

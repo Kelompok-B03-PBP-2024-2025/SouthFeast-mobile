@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:southfeast_mobile/product/screens/product.dart';
 import 'package:southfeast_mobile/forum/screens/forum.dart';
 import 'package:southfeast_mobile/review/screens/review.dart';
+import 'package:southfeast_mobile/screens/homepage.dart';
 import 'package:southfeast_mobile/wishlist/screens/wishlist.dart';
 import 'package:southfeast_mobile/dashboard/screens/dashboard.dart';
 import 'package:southfeast_mobile/restaurant/screens/restaurant.dart';
-import 'package:southfeast_mobile/screens/homepage.dart';
-import 'package:southfeast_mobile/authentication/screens/login.dart';  // Add this import
+import 'package:southfeast_mobile/authentication/screens/login.dart';
 import '../widgets/app_bar.dart';
-import '../widgets/left_drawer.dart';  // Add this import
+import '../widgets/left_drawer.dart';
+import 'package:responsive_navigation_bar/responsive_navigation_bar.dart';
+// import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
 
 class RootPage extends StatefulWidget {
   final bool isStaff;
   final bool isAuthenticated;
   final int initialIndex;
-  final String? username;  // Add this
+  final String? username;
 
   const RootPage({
     super.key,
     required this.isStaff,
     required this.isAuthenticated,
-    this.initialIndex = 0,  // Add this parameter with a default value of 0
-    this.username,  // Add this
+    this.initialIndex = 0,
+    this.username,
   });
 
   @override
-  _RootPageState createState() => _RootPageState();
+  State<RootPage> createState() => _RootPageState();
 }
 
 class _RootPageState extends State<RootPage> {
@@ -48,10 +48,8 @@ class _RootPageState extends State<RootPage> {
           "title": "Home",
           "icon": Icons.home,
           "screen": MyHomePage(
-            isStaff: widget.isStaff,
-            isAuthenticated: widget.isAuthenticated,
-            username: widget.username,  // Add this
-          ),
+            isStaff: widget.isStaff, 
+            isAuthenticated: widget.isAuthenticated),
           "requiresAuth": false,
         },
         {
@@ -79,10 +77,8 @@ class _RootPageState extends State<RootPage> {
           "title": "Home",
           "icon": Icons.home,
           "screen": MyHomePage(
-            isStaff: widget.isStaff,
-            isAuthenticated: widget.isAuthenticated,
-            username: widget.username,  // Add this
-          ),
+            isStaff: widget.isStaff, 
+            isAuthenticated: widget.isAuthenticated),
           "requiresAuth": false,
         },
         {
@@ -123,7 +119,6 @@ class _RootPageState extends State<RootPage> {
     final menuItems = _getMenuItems();
     final selectedItem = menuItems[index];
 
-    // Check authentication requirements
     if (selectedItem['requiresAuth'] && !widget.isAuthenticated) {
       Navigator.push(
         context,
@@ -154,35 +149,30 @@ class _RootPageState extends State<RootPage> {
         isStaff: widget.isStaff,
         isAuthenticated: isAuthenticated,
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: menuItems.map<Widget>((item) => item['screen'] as Widget).toList(),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: SizedBox(
-            height: 60,
-            child: BottomNavigationBar(
-              items: menuItems.map((item) => BottomNavigationBarItem(
-                icon: Icon(item['icon']),
-                label: item['title'],
-                activeIcon: Icon(item['icon']),
-              )).toList(),
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.grey[400],
-              unselectedItemColor: Colors.grey[800],
-              onTap: _onItemTapped,
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.black,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              selectedIconTheme: const IconThemeData(size: 24),
-              unselectedIconTheme: const IconThemeData(size: 20),
-              elevation: 0,
-            ),
+      extendBody: true,
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: menuItems[_selectedIndex]['screen'] as Widget),
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(20),
+        child: ResponsiveNavigationBar(
+          backgroundColor: Colors.black,
+          backgroundOpacity: 0.5,
+          backgroundBlur: 1,
+          showActiveButtonText: false,
+          inactiveIconColor: Colors.white,
+          activeIconColor: Colors.white,
+          selectedIndex: _selectedIndex,
+          onTabChange: _onItemTapped,
+          textStyle: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
           ),
+          navigationBarButtons: menuItems.map((item) => NavigationBarButton(
+            text: item['title'] as String,
+            icon: item['icon'] as IconData,
+            backgroundColor: Colors.black,
+          )).toList(),
         ),
       ),
     );

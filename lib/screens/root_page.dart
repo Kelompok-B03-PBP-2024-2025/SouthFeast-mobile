@@ -158,30 +158,34 @@ class _RootPageState extends State<RootPage> {
         index: _selectedIndex,
         children: menuItems.map<Widget>((item) => item['screen'] as Widget).toList(),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: SizedBox(
-            height: 60,
-            child: BottomNavigationBar(
-              items: menuItems.map((item) => BottomNavigationBarItem(
-                icon: Icon(item['icon']),
-                label: item['title'],
-                activeIcon: Icon(item['icon']),
-              )).toList(),
-              currentIndex: _selectedIndex,
-              selectedItemColor: Colors.grey[400],
-              unselectedItemColor: Colors.grey[800],
-              onTap: _onItemTapped,
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.black,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              selectedIconTheme: const IconThemeData(size: 24),
-              unselectedIconTheme: const IconThemeData(size: 20),
-              elevation: 0,
-            ),
+      bottomNavigationBar: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+        child: Theme(
+          data: ThemeData(
+            splashFactory: NoSplash.splashFactory,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: BottomNavigationBar(
+            items: menuItems.map((item) => BottomNavigationBarItem(
+              icon: Icon(item['icon']),
+              label: item['title'],
+              activeIcon: Icon(item['icon']),
+            )).toList(),
+            currentIndex: _selectedIndex,
+            selectedItemColor: Colors.grey[400],
+            unselectedItemColor: Colors.grey[800],
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.black,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            selectedIconTheme: const IconThemeData(size: 24),
+            unselectedIconTheme: const IconThemeData(size: 20),
+            elevation: 0,
           ),
         ),
       ),

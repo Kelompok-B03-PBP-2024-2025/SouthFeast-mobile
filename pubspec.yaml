@@ -37,6 +37,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
   pbp_django_auth: ^0.4.0
+  salomon_bottom_bar: ^3.3.2
+  responsive_navigation_bar: ^5.0.2
+  flutter_floating_bottom_bar: ^1.2.1+1
+  crystal_navigation_bar: ^1.0.0
+  iconly: ^1.0.1
+  flutter_flip_card: ^0.0.6
 
 dev_dependencies:
   flutter_test:

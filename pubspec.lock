@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.0"
+  crystal_navigation_bar:
+    dependency: "direct main"
+    description:
+      name: crystal_navigation_bar
+      sha256: c7a0b90bbffbde807ac01819f1ba113a302e86c2b4875cb26a14fd3fc3e91804
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -78,6 +86,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_flip_card:
+    dependency: "direct main"
+    description:
+      name: flutter_flip_card
+      sha256: cf67f31e85fa4452f493cac2f3c123bcacacb0f7feb3cc5f831faeea77cdc671
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.6"
+  flutter_floating_bottom_bar:
+    dependency: "direct main"
+    description:
+      name: flutter_floating_bottom_bar
+      sha256: "5aff247b2015837bd121b6c694fb30107ed5677cd74e3088f6a5a18e369bc0ec"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1+1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -112,6 +136,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  iconly:
+    dependency: "direct main"
+    description:
+      name: iconly
+      sha256: "22f16dd28984d232891299ead9d9b75ae5a32b4d9cdf63e8e574f1ceb11dcbd9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   leak_tracker:
     dependency: transitive
     description:
@@ -240,6 +272,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
+  responsive_navigation_bar:
+    dependency: "direct main"
+    description:
+      name: responsive_navigation_bar
+      sha256: "85f6bb177b3382ec79b563902087f66730246d5895361036b33f448bba180994"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.2"
+  salomon_bottom_bar:
+    dependency: "direct main"
+    description:
+      name: salomon_bottom_bar
+      sha256: e20abf2e449749432223a8b4e6647c212eef6c2b638e0ed8cc92eff9529c2b48
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.2"
   shared_preferences:
     dependency: transitive
     description:

@@ -120,12 +120,21 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Untuk menyambungkan Android emulator dengan Django pada localhost,
                       // gunakan URL http://10.0.2.2/
                       final response = await request.postJson(
-                          "http://127.0.0.1:8000/auth/api/register/",
+                          "http://10.0.2.2:8000/auth/api/register/",
                           jsonEncode({
                             "username": username,
                             "password1": password1,
                             "password2": password2,
                           }));
+
+                      
+                      // final response = await request.postJson(
+                      //     "http://127.0.0.1:8000/auth/api/register/",
+                      //     jsonEncode({
+                      //       "username": username,
+                      //       "password1": password1,
+                      //       "password2": password2,
+                      //     }));
                       if (context.mounted) {
                         if (response['status'] == 'success') {
                           ScaffoldMessenger.of(context).showSnackBar(

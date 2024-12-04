@@ -4,9 +4,11 @@ import 'package:southfeast_mobile/dashboard/models/product/product.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:southfeast_mobile/dashboard/screens/makanan_form.dart';
 import 'package:southfeast_mobile/dashboard/widgets/filter_bottom_sheet.dart';
 import 'package:southfeast_mobile/dashboard/widgets/product_grid.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
+import 'package:southfeast_mobile/dashboard/widgets/restaurant_grid.dart'; // Add this import
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -30,6 +32,8 @@ class _DashboardPageState extends State<DashboardPage> {
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+
+  bool _showRestaurants = false; // Add this line
 
   @override
   void initState() {
@@ -60,14 +64,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
     try {
       final response = await request.get(
-          // 'http://10.0.2.2:8000/dashboard/show-json/?page=$page&'
-          'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
-          'search=${_searchController.text}&'
-          'category=$_selectedCategory&'
-          'kecamatan=$_selectedKecamatan&'
-          'min_price=${_minPriceController.text}&'
-          'max_price=${_maxPriceController.text}');
-
+        // 'http://10.0.2.2:8000/dashboard/show-json/?page=$page&'
+        'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
+        'search=${_searchController.text}&'
+        'category=$_selectedCategory&'
+        'kecamatan=$_selectedKecamatan&'
+        'min_price=${_minPriceController.text}&'
+        'max_price=${_maxPriceController.text}'
+      );
+      
       if (response != null) {
         Product productData = Product.fromMap(response);
 
@@ -171,16 +176,58 @@ class _DashboardPageState extends State<DashboardPage> {
               _applyFilters();
             },
           ),
-          Expanded(
-            child: _products.isEmpty && !_isLoading
-                ? const Center(child: Text('No products found'))
-                : ProductGrid(
-                    products: _products,
-                    scrollController: _scrollController,
-                    isLoading: _isLoading,
+          // Add this suggestion widget
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _showRestaurants = !_showRestaurants;
+                });
+              },
+              child: Row(
+                children: [
+                  Icon(_showRestaurants ? Icons.shopping_cart : Icons.restaurant, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    _showRestaurants 
+                        ? 'Want to see products instead? Click here'
+                        : 'Want to see restaurants instead? Click here',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: _showRestaurants
+                ? RestaurantGrid()
+                : (_products.isEmpty && !_isLoading
+                    ? const Center(child: Text('No products found'))
+                    : ProductGrid(
+                        products: _products,
+                        scrollController: _scrollController,
+                        isLoading: _isLoading,
+                        onUpdate: () {
+                          _currentPage = 1;
+                          fetchProducts(request, page: 1);
+                        },
+                      )),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const MakananForm()),
+          );
+        },
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.black,
       ),
     );
   }
@@ -195,3 +242,4 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 }
+

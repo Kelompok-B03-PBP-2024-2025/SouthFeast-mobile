@@ -48,8 +48,7 @@ class _RootPageState extends State<RootPage> {
           "title": "Home",
           "icon": Icons.home,
           "screen": MyHomePage(
-            isStaff: widget.isStaff, 
-            isAuthenticated: widget.isAuthenticated),
+              isStaff: widget.isStaff, isAuthenticated: widget.isAuthenticated),
           "requiresAuth": false,
         },
         {
@@ -77,8 +76,7 @@ class _RootPageState extends State<RootPage> {
           "title": "Home",
           "icon": Icons.home,
           "screen": MyHomePage(
-            isStaff: widget.isStaff, 
-            isAuthenticated: widget.isAuthenticated),
+              isStaff: widget.isStaff, isAuthenticated: widget.isAuthenticated),
           "requiresAuth": false,
         },
         {
@@ -151,8 +149,8 @@ class _RootPageState extends State<RootPage> {
       ),
       extendBody: true,
       body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: menuItems[_selectedIndex]['screen'] as Widget),
+          height: MediaQuery.of(context).size.height,
+          child: menuItems[_selectedIndex]['screen'] as Widget),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(20),
         child: ResponsiveNavigationBar(
@@ -168,11 +166,13 @@ class _RootPageState extends State<RootPage> {
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
-          navigationBarButtons: menuItems.map((item) => NavigationBarButton(
-            text: item['title'] as String,
-            icon: item['icon'] as IconData,
-            backgroundColor: Colors.black,
-          )).toList(),
+          navigationBarButtons: menuItems
+              .map((item) => NavigationBarButton(
+                    text: item['title'] as String,
+                    icon: item['icon'] as IconData,
+                    backgroundColor: Colors.black,
+                  ))
+              .toList(),
         ),
       ),
     );

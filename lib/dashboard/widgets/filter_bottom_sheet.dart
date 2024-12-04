@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class FilterBottomSheet extends StatelessWidget {
@@ -74,7 +73,8 @@ class FilterBottomSheet extends StatelessWidget {
                   return FilterChip(
                     label: Text(category),
                     selected: selectedCategory == category,
-                    selectedColor: Colors.black, // Change selected color to black
+                    selectedColor:
+                        Colors.black, // Change selected color to black
                     onSelected: (selected) {
                       setState(() {
                         onCategorySelected(selected ? category : 'all');
@@ -100,7 +100,8 @@ class FilterBottomSheet extends StatelessWidget {
                   return FilterChip(
                     label: Text(kecamatan),
                     selected: selectedKecamatan == kecamatan,
-                    selectedColor: Colors.black, // Change selected color to black
+                    selectedColor:
+                        Colors.black, // Change selected color to black
                     onSelected: (selected) {
                       setState(() {
                         onKecamatanSelected(selected ? kecamatan : 'all');

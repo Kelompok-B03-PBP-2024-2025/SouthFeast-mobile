@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
 

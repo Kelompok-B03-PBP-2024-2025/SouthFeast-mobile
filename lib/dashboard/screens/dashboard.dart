@@ -42,7 +42,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       if (!_isLoading && _hasNext) {
         final request = context.read<CookieRequest>();
         fetchProducts(request, page: _currentPage + 1);
@@ -59,30 +60,27 @@ class _DashboardPageState extends State<DashboardPage> {
 
     try {
       final response = await request.get(
-        // 'http://10.0.2.2:8000/dashboard/show-json/?page=$page&'
-        'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
-        'search=${_searchController.text}&'
-        'category=$_selectedCategory&'
-        'kecamatan=$_selectedKecamatan&'
-        'min_price=${_minPriceController.text}&'
-        'max_price=${_maxPriceController.text}'
-      );
-      
+          // 'http://10.0.2.2:8000/dashboard/show-json/?page=$page&'
+          'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
+          'search=${_searchController.text}&'
+          'category=$_selectedCategory&'
+          'kecamatan=$_selectedKecamatan&'
+          'min_price=${_minPriceController.text}&'
+          'max_price=${_maxPriceController.text}');
+
       if (response != null) {
         Product productData = Product.fromMap(response);
-        
+
         setState(() {
           // Convert lists to Sets to ensure uniqueness, then back to List
           if (_categories.length == 1) {
-            Set<String> uniqueCategories = Set<String>.from(
-              response['categories']?.cast<String>() ?? []
-            );
+            Set<String> uniqueCategories =
+                Set<String>.from(response['categories']?.cast<String>() ?? []);
             _categories = ['all', ...uniqueCategories];
           }
           if (_kecamatans.length == 1) {
-            Set<String> uniqueKecamatans = Set<String>.from(
-              response['kecamatans']?.cast<String>() ?? []
-            );
+            Set<String> uniqueKecamatans =
+                Set<String>.from(response['kecamatans']?.cast<String>() ?? []);
             _kecamatans = ['all', ...uniqueKecamatans];
           }
 

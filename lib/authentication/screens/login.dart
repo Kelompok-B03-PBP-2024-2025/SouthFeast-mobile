@@ -107,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                       //   'password': password,
                       // });
                       final response = await request
-                          .login("http://127.0.0.1:8000/auth/api/login/", {
+                          .login("https://southfeast-production.up.railway.app/auth/api/login/", {
                         'username': username,
                         'password': password,
                       });

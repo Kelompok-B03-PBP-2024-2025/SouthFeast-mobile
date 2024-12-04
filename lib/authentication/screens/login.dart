@@ -102,16 +102,16 @@ class _LoginPageState extends State<LoginPage> {
 
 
                       // gunakan URL http://10.0.2.2/ buat emulator Android Studio
-                      final response = await request
-                          .login("http://10.0.2.2:8000/auth/api/login/", {
-                        'username': username,
-                        'password': password,
-                      });
                       // final response = await request
-                      //     .login("http://127.0.0.1:8000/auth/api/login/", {
+                      //     .login("http://10.0.2.2:8000/auth/api/login/", {
                       //   'username': username,
                       //   'password': password,
                       // });
+                      final response = await request
+                          .login("http://127.0.0.1:8000/auth/api/login/", {
+                        'username': username,
+                        'password': password,
+                      });
 
                       if (request.loggedIn) {
                         String message = response['message'];

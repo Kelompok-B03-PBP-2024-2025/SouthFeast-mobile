@@ -1,4 +1,3 @@
-// lib/screens/dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/product.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
@@ -8,7 +7,7 @@ import 'package:southfeast_mobile/dashboard/screens/makanan_form.dart';
 import 'package:southfeast_mobile/dashboard/widgets/filter_bottom_sheet.dart';
 import 'package:southfeast_mobile/dashboard/widgets/product_grid.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
-import 'package:southfeast_mobile/dashboard/widgets/restaurant_grid.dart'; // Add this import
+import 'package:southfeast_mobile/dashboard/widgets/restaurant_grid.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -26,14 +25,13 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Result> _products = [];
   bool _hasNext = false;
   bool _isLoading = false;
+  bool _showRestaurants = false;
+  Set<int> _wishlistedProducts = {};
   final ScrollController _scrollController = ScrollController();
 
-  // Controllers for price range
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-
-  bool _showRestaurants = false; // Add this line
 
   @override
   void initState() {
@@ -55,6 +53,27 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  void _toggleWishlist(int productId) async {
+    final request = context.read<CookieRequest>();
+    if (!request.loggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login to add items to wishlist'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      if (_wishlistedProducts.contains(productId)) {
+        _wishlistedProducts.remove(productId);
+      } else {
+        _wishlistedProducts.add(productId);
+      }
+    });
+  }
+
   Future<void> fetchProducts(CookieRequest request, {int page = 1}) async {
     if (_isLoading) return;
 
@@ -64,7 +83,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
     try {
       final response = await request.get(
-        // 'http://10.0.2.2:8000/dashboard/show-json/?page=$page&'
         'https://southfeast-production.up.railway.app/dashboard/show-json/?page=$page&'
         'search=${_searchController.text}&'
         'category=$_selectedCategory&'
@@ -77,7 +95,6 @@ class _DashboardPageState extends State<DashboardPage> {
         Product productData = Product.fromMap(response);
 
         setState(() {
-          // Convert lists to Sets to ensure uniqueness, then back to List
           if (_categories.length == 1) {
             Set<String> uniqueCategories =
                 Set<String>.from(response['categories']?.cast<String>() ?? []);
@@ -89,7 +106,6 @@ class _DashboardPageState extends State<DashboardPage> {
             _kecamatans = ['all', ...uniqueKecamatans];
           }
 
-          // Update products
           if (page == 1) {
             _products = productData.results ?? [];
           } else {
@@ -112,7 +128,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _applyFilters() {
-    _currentPage = 1; // Reset to first page when applying filters
+    _currentPage = 1;
     final request = context.read<CookieRequest>();
     fetchProducts(request, page: 1);
   }
@@ -176,7 +192,6 @@ class _DashboardPageState extends State<DashboardPage> {
               _applyFilters();
             },
           ),
-          // Add this suggestion widget
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: InkWell(
@@ -215,6 +230,9 @@ class _DashboardPageState extends State<DashboardPage> {
                           _currentPage = 1;
                           fetchProducts(request, page: 1);
                         },
+                        isAdmin: false,
+                        wishlistedProducts: _wishlistedProducts,
+                        onWishlistToggle: _toggleWishlist,
                       )),
           ),
         ],
@@ -235,11 +253,9 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void dispose() {
     _scrollController.dispose();
-    // Clean up controllers
     _minPriceController.dispose();
     _maxPriceController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 }
-

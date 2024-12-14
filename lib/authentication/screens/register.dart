@@ -127,7 +127,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       //       "password2": password2,
                       //     }));
 
-                      
                       final response = await request.postJson(
                           "https://southfeast-production.up.railway.app/auth/api/register/",
                           jsonEncode({

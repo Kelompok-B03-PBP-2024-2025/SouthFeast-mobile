@@ -8,7 +8,7 @@ import 'package:southfeast_mobile/dashboard/screens/makanan_form.dart';
 import 'package:southfeast_mobile/dashboard/widgets/filter_bottom_sheet.dart';
 import 'package:southfeast_mobile/dashboard/widgets/product_grid.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
-import 'package:southfeast_mobile/dashboard/widgets/restaurant_grid.dart'; // Add this import
+import 'package:southfeast_mobile/dashboard/screens/restaurant_page.dart'; // Add this import
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -64,15 +64,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
     try {
       final response = await request.get(
-        // 'http://10.0.2.2:8000/dashboard/show-json/?page=$page&'
-        'https://southfeast-production.up.railway.app/dashboard/show-json/?page=$page&'
-        'search=${_searchController.text}&'
-        'category=$_selectedCategory&'
-        'kecamatan=$_selectedKecamatan&'
-        'min_price=${_minPriceController.text}&'
-        'max_price=${_maxPriceController.text}'
-      );
-      
+          // 'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
+          'https://southfeast-production.up.railway.app/dashboard/show-json/?page=$page&'
+          'search=${_searchController.text}&'
+          'category=$_selectedCategory&'
+          'kecamatan=$_selectedKecamatan&'
+          'min_price=${_minPriceController.text}&'
+          'max_price=${_maxPriceController.text}');
+
       if (response != null) {
         Product productData = Product.fromMap(response);
 
@@ -124,110 +123,125 @@ class _DashboardPageState extends State<DashboardPage> {
     return Scaffold(
       body: Column(
         children: [
-          SearchFilterBar(
-            searchController: _searchController,
-            categories: _categories,
-            selectedCategory: _selectedCategory,
-            onCategorySelected: (value) {
-              setState(() {
-                _selectedCategory = value;
-              });
-              _applyFilters();
-            },
-            kecamatans: _kecamatans,
-            selectedKecamatan: _selectedKecamatan,
-            onKecamatanSelected: (value) {
-              setState(() {
-                _selectedKecamatan = value;
-              });
-              _applyFilters();
-            },
-            onFilterPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                builder: (BuildContext context) {
-                  return FilterBottomSheet(
-                    minPriceController: _minPriceController,
-                    maxPriceController: _maxPriceController,
-                    categories: _categories,
-                    selectedCategory: _selectedCategory,
-                    onCategorySelected: (value) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    },
-                    kecamatans: _kecamatans,
-                    selectedKecamatan: _selectedKecamatan,
-                    onKecamatanSelected: (value) {
-                      setState(() {
-                        _selectedKecamatan = value;
-                      });
-                    },
-                    onApplyFilters: _applyFilters,
-                  );
-                },
-              );
-            },
-            onSearchSubmitted: (value) {
-              _applyFilters();
-            },
-          ),
-          // Add this suggestion widget
+          // View toggle button
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: InkWell(
-              onTap: () {
+            padding: const EdgeInsets.only(top: 4, right: 16, left: 16), // Reduced padding
+            alignment: _showRestaurants ? Alignment.centerLeft : Alignment.centerRight,
+            child: ElevatedButton.icon(
+              onPressed: () {
                 setState(() {
                   _showRestaurants = !_showRestaurants;
                 });
               },
-              child: Row(
-                children: [
-                  Icon(_showRestaurants ? Icons.shopping_cart : Icons.restaurant, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    _showRestaurants 
-                        ? 'Want to see products instead? Click here'
-                        : 'Want to see restaurants instead? Click here',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ],
+              icon: Icon(
+                _showRestaurants ? Icons.shopping_cart : Icons.restaurant,
+                size: 20,
+              ),
+              label: Text(
+                _showRestaurants ? 'View Products' : 'View Restaurants',
+                style: const TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
           ),
+          // Conditional content
           Expanded(
             child: _showRestaurants
-                ? RestaurantGrid()
-                : (_products.isEmpty && !_isLoading
-                    ? const Center(child: Text('No products found'))
-                    : ProductGrid(
-                        products: _products,
-                        scrollController: _scrollController,
-                        isLoading: _isLoading,
-                        onUpdate: () {
-                          _currentPage = 1;
-                          fetchProducts(request, page: 1);
+                ? RestaurantPage()
+                : Column(
+                    children: [
+                      SearchFilterBar(
+                        searchController: _searchController,
+                        categories: _categories,
+                        selectedCategory: _selectedCategory,
+                        onCategorySelected: (value) {
+                          setState(() {
+                            _selectedCategory = value;
+                          });
+                          _applyFilters();
                         },
-                      )),
+                        kecamatans: _kecamatans,
+                        selectedKecamatan: _selectedKecamatan,
+                        onKecamatanSelected: (value) {
+                          setState(() {
+                            _selectedKecamatan = value;
+                          });
+                          _applyFilters();
+                        },
+                        onFilterPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            builder: (BuildContext context) {
+                              return FilterBottomSheet(
+                                minPriceController: _minPriceController,
+                                maxPriceController: _maxPriceController,
+                                categories: _categories,
+                                selectedCategory: _selectedCategory,
+                                onCategorySelected: (value) {
+                                  setState(() {
+                                    _selectedCategory = value;
+                                  });
+                                },
+                                kecamatans: _kecamatans,
+                                selectedKecamatan: _selectedKecamatan,
+                                onKecamatanSelected: (value) {
+                                  setState(() {
+                                    _selectedKecamatan = value;
+                                  });
+                                },
+                                onApplyFilters: _applyFilters,
+                              );
+                            },
+                          );
+                        },
+                        onSearchSubmitted: (value) {
+                          _applyFilters();
+                        },
+                      ),
+                      Expanded(
+                        child: _products.isEmpty && !_isLoading
+                            ? const Center(child: Text('No products found'))
+                            : ProductGrid(
+                                products: _products,
+                                scrollController: _scrollController,
+                                isLoading: _isLoading,
+                                onUpdate: () {
+                                  _currentPage = 1;
+                                  fetchProducts(request, page: 1);
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const MakananForm()),
-          );
-        },
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.black,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 60.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MakananForm()),
+            );
+          },
+          child: const Icon(Icons.add),
+          backgroundColor: Colors.black,
+        ),
       ),
     );
   }
@@ -242,4 +256,3 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 }
-

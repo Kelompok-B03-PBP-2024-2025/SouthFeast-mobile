@@ -101,7 +101,8 @@ class _EditMakananFormState extends State<EditMakananForm> {
           width: 2.0,
         ),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
     );
   }
 
@@ -116,10 +117,7 @@ class _EditMakananFormState extends State<EditMakananForm> {
         centerTitle: true,
         title: const Text('Edit Food Item'),
         titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: Colors.white
-        ),
+            fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
         elevation: 0,
       ),
       body: Form(
@@ -140,16 +138,21 @@ class _EditMakananFormState extends State<EditMakananForm> {
                       children: [
                         TextFormField(
                           initialValue: _name,
-                          decoration: _buildDecoration('Name', 'Enter food name'),
+                          decoration:
+                              _buildDecoration('Name', 'Enter food name'),
                           onChanged: (value) => _name = value,
-                          validator: (value) => value!.isEmpty ? "Name cannot be empty!" : null,
+                          validator: (value) =>
+                              value!.isEmpty ? "Name cannot be empty!" : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           initialValue: _description,
-                          decoration: _buildDecoration('Description', 'Enter food description'),
+                          decoration: _buildDecoration(
+                              'Description', 'Enter food description'),
                           onChanged: (value) => _description = value,
-                          validator: (value) => value!.isEmpty ? "Description cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Description cannot be empty!"
+                              : null,
                           maxLines: null,
                           keyboardType: TextInputType.multiline,
                         ),
@@ -157,20 +160,26 @@ class _EditMakananFormState extends State<EditMakananForm> {
                         TextFormField(
                           initialValue: _price.toString(),
                           decoration: _buildDecoration('Price', 'Enter price'),
-                          onChanged: (value) => _price = double.tryParse(value) ?? 0,
+                          onChanged: (value) =>
+                              _price = double.tryParse(value) ?? 0,
                           keyboardType: TextInputType.number,
-                          validator: (value) => value!.isEmpty ? "Price cannot be empty!" : null,
+                          validator: (value) =>
+                              value!.isEmpty ? "Price cannot be empty!" : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           initialValue: _image,
-                          decoration: _buildDecoration('Image URL', 'Enter image URL'),
+                          decoration:
+                              _buildDecoration('Image URL', 'Enter image URL'),
                           onChanged: (value) => _image = value,
-                          validator: (value) => value!.isEmpty ? "Image URL cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Image URL cannot be empty!"
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          decoration: _buildDecoration('Category', 'Select category'),
+                          decoration:
+                              _buildDecoration('Category', 'Select category'),
                           value: _category.isEmpty ? null : _category,
                           items: categoryChoices.map((String category) {
                             return DropdownMenuItem<String>(
@@ -183,38 +192,48 @@ class _EditMakananFormState extends State<EditMakananForm> {
                               _category = newValue ?? '';
                             });
                           },
-                          validator: (value) => value == null ? "Please select a category" : null,
+                          validator: (value) =>
+                              value == null ? "Please select a category" : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           initialValue: _restaurant_name,
-                          decoration: _buildDecoration('Restaurant Name', 'Enter restaurant name'),
+                          decoration: _buildDecoration(
+                              'Restaurant Name', 'Enter restaurant name'),
                           onChanged: (value) => _restaurant_name = value,
-                          validator: (value) => value!.isEmpty ? "Restaurant name cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Restaurant name cannot be empty!"
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          decoration: _buildDecoration('Kecamatan', 'Select kecamatan'),
+                          decoration:
+                              _buildDecoration('Kecamatan', 'Select kecamatan'),
                           value: _kecamatan.isEmpty ? null : _kecamatan,
                           items: kecamatanChoices.map((String kecamatan) {
                             return DropdownMenuItem<String>(
                               value: kecamatan,
                               child: Text(kecamatan),
-                          );
+                            );
                           }).toList(),
                           onChanged: (String? newValue) {
                             setState(() {
                               _kecamatan = newValue ?? '';
                             });
                           },
-                          validator: (value) => value == null ? "Please select a kecamatan" : null,
+                          validator: (value) => value == null
+                              ? "Please select a kecamatan"
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           initialValue: _location,
-                          decoration: _buildDecoration('Location', 'Enter location'),
+                          decoration:
+                              _buildDecoration('Location', 'Enter location'),
                           onChanged: (value) => _location = value,
-                          validator: (value) => value!.isEmpty ? "Location cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Location cannot be empty!"
+                              : null,
                           maxLines: null,
                           keyboardType: TextInputType.multiline,
                         ),
@@ -228,10 +247,11 @@ class _EditMakananFormState extends State<EditMakananForm> {
                                 : () async {
                                     if (_formKey.currentState!.validate()) {
                                       setState(() => _isLoading = true);
-                                      
+
                                       try {
                                         final response = await request.postJson(
-                                          'http://10.0.2.2:8000/dashboard/edit-makanan-flutter/${widget.makanan['id']}/',
+                                          // 'http://127.0.0.1:8000/dashboard/edit-makanan-flutter/${widget.makanan['id']}/',
+                                          'https://southfeast-production.up.railway.app/dashboard/edit-makanan-flutter/${widget.makanan['id']}/',
                                           jsonEncode({
                                             'name': _name,
                                             'description': _description,
@@ -263,16 +283,20 @@ class _EditMakananFormState extends State<EditMakananForm> {
                                               context: context,
                                               builder: (context) => AlertDialog(
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
                                                 ),
                                                 title: const Text('Success'),
-                                                content: const Text('Food item updated successfully!'),
+                                                content: const Text(
+                                                    'Food item updated successfully!'),
                                                 actions: [
                                                   TextButton(
                                                     child: const Text('OK'),
                                                     onPressed: () {
-                                                      Navigator.pop(context); // tutup dialog
-                                                      Navigator.pop(context, updatedResult); // kembali ke detail dengan data baru
+                                                      Navigator.pop(
+                                                          context); // tutup dialog
+                                                      Navigator.pop(context,
+                                                          updatedResult); // kembali ke detail dengan data baru
                                                     },
                                                   ),
                                                 ],
@@ -290,7 +314,8 @@ class _EditMakananFormState extends State<EditMakananForm> {
                                               actions: [
                                                 TextButton(
                                                   child: const Text('OK'),
-                                                  onPressed: () => Navigator.pop(context),
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
                                                 ),
                                               ],
                                             ),
@@ -313,15 +338,16 @@ class _EditMakananFormState extends State<EditMakananForm> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
                                     ),
                                   )
                                 : const Text(
                                     'Update',
                                     style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white),
                                   ),
                           ),
                         ),

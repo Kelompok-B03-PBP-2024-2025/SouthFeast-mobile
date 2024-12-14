@@ -106,11 +106,12 @@ class _LoginPageState extends State<LoginPage> {
                       //   'username': username,
                       //   'password': password,
                       // });
-                      final response = await request
-                          .login("https://southfeast-production.up.railway.app/auth/api/login/", {
-                        'username': username,
-                        'password': password,
-                      });
+                      final response = await request.login(
+                          "https://southfeast-production.up.railway.app/auth/api/login/",
+                          {
+                            'username': username,
+                            'password': password,
+                          });
 
                       if (request.loggedIn) {
                         String message = response['message'];

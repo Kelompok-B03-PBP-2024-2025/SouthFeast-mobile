@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
 import 'package:southfeast_mobile/dashboard/screens/edit_makanan.dart';
+import 'package:southfeast_mobile/widgets/custom_bottom_nav.dart';
+import 'package:southfeast_mobile/authentication/screens/login.dart';
+import 'package:southfeast_mobile/config/menu_config.dart';  // Add this import
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 // Dummy Review Model (To be replaced with actual model later)
 class Review {
@@ -20,11 +25,15 @@ class Review {
 class DetailMakanan extends StatefulWidget {
   final Result result;
   final Function? onUpdate;
+  final bool isStaff;
+  final bool isAuthenticated;
 
   const DetailMakanan({
-    Key? key, 
+    Key? key,
     required this.result,
     this.onUpdate,
+    required this.isStaff,
+    required this.isAuthenticated,
   }) : super(key: key);
 
   @override
@@ -33,11 +42,22 @@ class DetailMakanan extends StatefulWidget {
 
 class _DetailMakananState extends State<DetailMakanan> {
   late Result currentResult;
+  // Update index calculation to match Dashboard position
+  late int _selectedIndex = widget.isStaff ? 1 : 0;
 
   @override
   void initState() {
     super.initState();
     currentResult = widget.result;
+  }
+
+  // Remove _getMenuItems() as we'll use MenuConfig instead
+
+  void _onItemTapped(int index) {
+    if (index != _selectedIndex) {
+      // Return to previous page if different index is selected
+      Navigator.pop(context);
+    }
   }
 
   void _handleEdit(BuildContext context) async {
@@ -59,7 +79,7 @@ class _DetailMakananState extends State<DetailMakanan> {
         ),
       ),
     );
-    
+
     if (editResult != null) {
       setState(() {
         currentResult = editResult as Result;
@@ -71,6 +91,7 @@ class _DetailMakananState extends State<DetailMakanan> {
   }
 
   Future<void> _handleDelete(BuildContext context) async {
+    final request = context.read<CookieRequest>();
     final bool? confirm = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -98,15 +119,37 @@ class _DetailMakananState extends State<DetailMakanan> {
       },
     );
 
-    if (confirm == true) {
-      // TODO: Implement delete functionality
-      print('Delete confirmed');
-      Navigator.of(context).pop(); // Return to previous screen
+    if (confirm == true && context.mounted) {
+      // final response = await request.get(
+      //   'http://127.0.0.1:8000/dashboard/delete-makanan-flutter/${currentResult.id}/',
+      // );
+      // if (response['status'] == 'success') {
+      //   if (widget.onUpdate != null) {
+      //     widget.onUpdate!();
+      //   }
+      //   if (context.mounted) {
+      //     Navigator.pop(context, true);
+      //   }
+      // }
+      final response = await request.get(
+        'https://southfeast-production.up.railway.app/dashboard/delete-makanan-flutter/${currentResult.id}/',
+      );
+      if (response['status'] == 'success') {
+        if (widget.onUpdate != null) {
+          widget.onUpdate!();
+        }
+        if (context.mounted) {
+          Navigator.pop(context, true);
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get the bottom navigation bar height
+    final bottomNavHeight = MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight;
+
     // Dummy reviews data
     final List<Review> reviews = [
       Review(
@@ -124,6 +167,7 @@ class _DetailMakananState extends State<DetailMakanan> {
     ];
 
     return Scaffold(
+      extendBody: true,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -171,7 +215,8 @@ class _DetailMakananState extends State<DetailMakanan> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -182,7 +227,8 @@ class _DetailMakananState extends State<DetailMakanan> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                             ),
                           ),
                         ],
@@ -191,7 +237,7 @@ class _DetailMakananState extends State<DetailMakanan> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
+      
                 // Combined Details & Description Section
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -221,8 +267,11 @@ class _DetailMakananState extends State<DetailMakanan> {
                       const Divider(color: Colors.grey),
                       InfoRow(title: 'Category', value: currentResult.category),
                       InfoRow(title: 'Price', value: currentResult.price),
-                      InfoRow(title: 'Kecamatan', value: currentResult.kecamatan),
-                      InfoRow(title: 'Restaurant', value: currentResult.restaurantName),
+                      InfoRow(
+                          title: 'Kecamatan', value: currentResult.kecamatan),
+                      InfoRow(
+                          title: 'Restaurant',
+                          value: currentResult.restaurantName),
                       InfoRow(title: 'Location', value: currentResult.location),
                       const SizedBox(height: 20),
                       const Text(
@@ -246,11 +295,11 @@ class _DetailMakananState extends State<DetailMakanan> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
+      
                 // Reviews Section
                 Container(
                   padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.all(16),
+                  margin: EdgeInsets.fromLTRB(16, 16, 16, bottomNavHeight + 16), // Add bottom padding
                   decoration: BoxDecoration(
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(20),
@@ -275,6 +324,22 @@ class _DetailMakananState extends State<DetailMakanan> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        menuItems: MenuConfig.getMenuItems(
+          isStaff: widget.isStaff,
+          isAuthenticated: widget.isAuthenticated,
+          username: null, // Add username if needed
+        ),
+        selectedIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        isAuthenticated: widget.isAuthenticated,
+        onAuthCheck: (context, item) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        },
       ),
     );
   }

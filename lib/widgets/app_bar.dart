@@ -48,7 +48,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
                 //     .logout("http://10.0.2.2:8000/auth/api/logout/");
                 // String message = response["message"];
                 final response = await request
-                    .logout("http://127.0.0.1:8000/auth/api/logout/");
+                    .logout("https://southfeast-production.up.railway.app/auth/api/logout/");
                 String message = response["message"];
                 if (context.mounted) {
                   if (response['status']) {

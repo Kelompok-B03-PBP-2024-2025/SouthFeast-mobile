@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class MyHomePage extends StatelessWidget {
   final bool isStaff;
   final bool isAuthenticated;
-  final String? username;  // Add this
+  final String? username; // Add this
 
   const MyHomePage({
     super.key,
     required this.isStaff,
     required this.isAuthenticated,
-    this.username,  // Add this
+    this.username, // Add this
   });
 
   @override

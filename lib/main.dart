@@ -27,9 +27,9 @@ class MyApp extends StatelessWidget {
           ).copyWith(secondary: Colors.black),
         ),
         routes: {
-          '/login': (context) => const LoginPage(), 
+          '/login': (context) => const LoginPage(),
         },
-        home: const RootPage( 
+        home: const RootPage(
           isStaff: false,
           isAuthenticated: false,
         ),

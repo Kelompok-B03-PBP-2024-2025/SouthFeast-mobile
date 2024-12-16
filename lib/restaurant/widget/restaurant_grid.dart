@@ -1,140 +1,90 @@
-// restaurant_detail.dart
+// // restaurant_grid.dart
 
-import 'package:flutter/material.dart';
-import '../models/restaurant/restaurant_models.dart';
+// import 'package:flutter/material.dart';
+// import '../models/restaurant/restaurant_models.dart';
 
-class RestaurantDetailPage extends StatelessWidget {
-  const RestaurantDetailPage({Key? key}) : super(key: key);
+// class RestaurantGrid extends StatelessWidget {
+//   final List<Restaurant> restaurants;
 
-  @override
-  Widget build(BuildContext context) {
-    final restaurant = ModalRoute.of(context)!.settings.arguments as Restaurant;
+//   const RestaurantGrid({
+//     Key? key,
+//     required this.restaurants,
+//   }) : super(key: key);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(restaurant.name),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (restaurant.menu.isNotEmpty && restaurant.menu.first.imageUrl.isNotEmpty)
-              Image.network(
-                restaurant.menu.first.imageUrl,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 200,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.restaurant, size: 50),
-                  );
-                },
-              ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    restaurant.name,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${restaurant.kecamatan}, ${restaurant.city}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    restaurant.location,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Menu',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  ...restaurant.menu.map((item) => MenuItemCard(item: item)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MenuItemCard extends StatelessWidget {
-  final MenuItem item;
-
-  const MenuItemCard({
-    Key? key,
-    required this.item,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            if (item.imageUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  item.imageUrl,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 80,
-                      height: 80,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.restaurant_menu),
-                    );
-                  },
-                ),
-              ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Rp ${item.price.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return GridView.builder(
+//       padding: const EdgeInsets.all(16),
+//       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//         crossAxisCount: 2,
+//         childAspectRatio: 0.8,
+//         crossAxisSpacing: 16,
+//         mainAxisSpacing: 16,
+//       ),
+//       itemCount: restaurants.length,
+//       itemBuilder: (context, index) {
+//         final restaurant = restaurants[index];
+//         return GestureDetector(
+//           onTap: () {
+//             Navigator.pushNamed(
+//               context,
+//               '/restaurant-detail',
+//               arguments: restaurant,
+//             );
+//           },
+//           child: Card(
+//             elevation: 4,
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(12),
+//             ),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Expanded(
+//                   flex: 3,
+//                   child: Container(
+//                     decoration: BoxDecoration(
+//                       borderRadius: const BorderRadius.vertical(
+//                         top: Radius.circular(12),
+//                       ),                    
+//                     ),
+//                   ),
+//                 ),
+//                 Expanded(
+//                   flex: 2,
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(8.0),
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Text(
+//                           restaurant.name,
+//                           style: const TextStyle(
+//                             fontSize: 16,
+//                             fontWeight: FontWeight.bold,
+//                           ),
+//                           maxLines: 1,
+//                           overflow: TextOverflow.ellipsis,
+//                         ),
+//                         const SizedBox(height: 4),
+//                         Text(
+//                           restaurant.location,
+//                           style: const TextStyle(
+//                             fontSize: 12,
+//                             color: Colors.grey,
+//                           ),
+//                           maxLines: 2,
+//                           overflow: TextOverflow.ellipsis,
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }

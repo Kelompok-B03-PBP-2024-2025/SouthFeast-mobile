@@ -1,5 +1,3 @@
-
-// menu_item.dart
 class MenuItem {
   final String? item;
   final String? image;

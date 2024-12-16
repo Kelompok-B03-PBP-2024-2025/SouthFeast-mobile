@@ -72,7 +72,7 @@ class ProductGrid extends StatelessWidget {
                         children: [
                           Container(
                             width: double.infinity,
-                            height: 150, // Adjust this value as needed
+                            height: 150, 
                             color: Colors.grey[200],
                             child: product.image != null
                                 ? Image.network(

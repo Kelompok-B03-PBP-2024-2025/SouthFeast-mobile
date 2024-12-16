@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
 
-// Dummy Review Model (To be replaced with actual model later)
 class Review {
   final String userName;
   final double rating;
@@ -39,7 +38,6 @@ class _DetailMakananState extends State<DetailMakanan> {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy reviews data
     final List<Review> reviews = [
       Review(
         userName: "John Doe",
@@ -78,7 +76,6 @@ class _DetailMakananState extends State<DetailMakanan> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                // Title Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
@@ -93,7 +90,6 @@ class _DetailMakananState extends State<DetailMakanan> {
                 ),
                 const SizedBox(height: 20),
 
-                // Combined Details & Description Section
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -148,7 +144,6 @@ class _DetailMakananState extends State<DetailMakanan> {
                 ),
                 const SizedBox(height: 20),
 
-                // Reviews Section
                 Container(
                   padding: const EdgeInsets.all(20),
                   margin: const EdgeInsets.all(16),

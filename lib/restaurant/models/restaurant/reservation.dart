@@ -8,7 +8,7 @@ class Reservation {
   final DateTime reservationDate;
   final TimeOfDay reservationTime;
   final int numberOfPeople;
-  final String status; // 'active', 'completed', 'cancelled'
+  final String status; 
   final DateTime createdAt;
 
   Reservation({

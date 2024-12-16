@@ -1,5 +1,3 @@
-// TODO Implement this library.
-// restaurant_result.dart
 import 'package:southfeast_mobile/restaurant/models/restaurant/menu_item.dart';
 
 class RestaurantResult {

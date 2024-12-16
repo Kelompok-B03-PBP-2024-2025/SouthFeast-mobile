@@ -23,7 +23,6 @@ class RestaurantDetailScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Restaurant Info
           Container(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -42,7 +41,6 @@ class RestaurantDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // Products Grid
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
@@ -74,7 +72,6 @@ class RestaurantDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Product Image
                         Expanded(
                           child: ClipRRect(
                             borderRadius: const BorderRadius.vertical(
@@ -98,7 +95,6 @@ class RestaurantDetailScreen extends StatelessWidget {
                                   ),
                           ),
                         ),
-                        // Product Info
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Column(

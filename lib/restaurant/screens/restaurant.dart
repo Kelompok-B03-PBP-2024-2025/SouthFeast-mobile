@@ -1,4 +1,3 @@
-// lib/screens/restaurant_page.dart
 import 'package:flutter/material.dart';
 
 class RestaurantPage extends StatelessWidget {

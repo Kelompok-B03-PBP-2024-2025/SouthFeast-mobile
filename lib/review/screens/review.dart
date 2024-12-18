@@ -1,3 +1,6 @@
+// review_page.dart
+
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -14,11 +17,10 @@ class ReviewPage extends StatefulWidget {
 class _ReviewPageState extends State<ReviewPage> {
   // Fetch data review dari API
   Future<List<ReviewEntry>> fetchReviews(CookieRequest request) async {
-    final response = await request.get('https://southfeast-production.up.railway.app/review/json/');  // URL API yang menampilkan data review
+    final response = await request.get('https://southfeast-production.up.railway.app/review/json/'); // URL API yang menampilkan data review
     
-    // Melakukan decode response menjadi bentuk json dan parsing ke List<ReviewEntry>
-    List<dynamic> data = response;
-    return data.map((json) => ReviewEntry.fromJson(json)).toList();
+    // Melakukan decode response menjadi bentuk json dan parsing ke ReviewEntry
+    return reviewEntryFromJson(json.encode(response));
   }
 
   @override
@@ -29,8 +31,7 @@ class _ReviewPageState extends State<ReviewPage> {
       appBar: AppBar(
         title: const Text('Review List'),
       ),
-      // drawer: const LeftDrawer(),
-      body: FutureBuilder(
+      body: FutureBuilder<List<ReviewEntry>>(
         future: fetchReviews(request),
         builder: (context, AsyncSnapshot<List<ReviewEntry>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -40,16 +41,17 @@ class _ReviewPageState extends State<ReviewPage> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No reviews found.'));
           } else {
+            final reviews = snapshot.data!;
             return ListView.builder(
-              itemCount: snapshot.data!.length,
+              itemCount: reviews.length,
               itemBuilder: (_, index) {
-                final review = snapshot.data![index];
+                final review = reviews[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: InkWell(
                     splashColor: Colors.blue.withAlpha(30),
                     onTap: () {
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ReviewDetailPage(review),
@@ -69,6 +71,7 @@ class _ReviewPageState extends State<ReviewPage> {
                                 Icons.star,
                                 color: Colors.orange,
                               ),
+                              const SizedBox(width: 4),
                               Text(
                                 "${review.rating}",
                                 style: const TextStyle(
@@ -94,12 +97,18 @@ class _ReviewPageState extends State<ReviewPage> {
                           ),
                           const SizedBox(height: 10),
                           
-                          // Image if exists
-                          if (review.reviewImage != null)
+                          // Display image URL if available
+                          if (review.imageUrl != null && review.imageUrl.toString().isNotEmpty)
                             Image.network(
-                              review.reviewImage!,
+                              review.imageUrl!,
                               fit: BoxFit.cover,
                               height: 150,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(child: CircularProgressIndicator());
+                              },
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Text("Error loading image"),
                             ),
                         ],
                       ),

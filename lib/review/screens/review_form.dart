@@ -1,10 +1,12 @@
-// lib/review/screens/review_form.dart
+// review_form.dart
 
-// ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:southfeast_mobile/review/screens/review.dart';
 
 class ReviewFormPage extends StatefulWidget {
   final int menuItemId; // ID menu item yang direview
@@ -21,11 +23,12 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
   // Fields for the form
   double _rating = 3.0;
   String _reviewText = '';
+  String? _imageUrl; // Field untuk URL gambar opsional
 
   bool _isLoading = false;
 
-  // Ganti dengan URL backend Anda
-  final String _backendUrl = 'https://southfeast-production.up.railway.app/review/create_review_flutter/';
+  // URL backend untuk membuat review
+  final String _backendUrl = 'https://southfeast-production.up.railway.app/review/create-flutter/';
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +84,18 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                       ),
                       const SizedBox(height: 24.0),
 
+                      // Image URL Field (optional)
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Image URL (Optional)',
+                          border: OutlineInputBorder(),
+                        ),
+                        onSaved: (value) {
+                          _imageUrl = value;
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+
                       // Submit Button
                       Center(
                         child: ElevatedButton(
@@ -120,14 +135,14 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
         'menu_item': widget.menuItemId,
         'rating': _rating,
         'review_text': _reviewText,
+        'image_url': _imageUrl, // Sertakan URL gambar jika diisi
       };
 
       final response = await http.post(
         Uri.parse(_backendUrl),
         headers: {
           'Content-Type': 'application/json',
-          // Tambahkan header otentikasi jika diperlukan
-          // 'Authorization': 'Bearer YOUR_AUTH_TOKEN',
+          // Tambahkan header autentikasi jika diperlukan
         },
         body: json.encode(reviewData),
       );
@@ -139,13 +154,16 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
         _formKey.currentState!.reset();
         setState(() {
           _rating = 3.0;
+          _imageUrl = null;
         });
-        Navigator.pop(context); // Kembali ke halaman sebelumnya setelah sukses
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ReviewPage()),
+        ); // Kembali ke halaman review setelah sukses
       } else {
-        // Untuk debugging: Cetak body response untuk melihat pesan error
-        print('Failed to submit review: ${response.body}');
+        // Debugging: tampilkan respons error
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to submit review')),
+          SnackBar(content: Text('Failed to submit review: ${response.body}')),
         );
       }
     } catch (e) {

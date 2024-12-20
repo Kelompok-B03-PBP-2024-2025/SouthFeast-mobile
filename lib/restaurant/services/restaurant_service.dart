@@ -1,8 +1,9 @@
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant_model.dart';
+import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
+import 'dart:convert';
 
 class RestaurantService {
-  static Future<List<Restaurant>> fetchRestaurants(
+  static Future<Restaurant> fetchRestaurants(
     CookieRequest request, {
     String? search,
     String? kecamatan,
@@ -10,22 +11,48 @@ class RestaurantService {
   }) async {
     try {
       final response = await request.get(
-          // 'http://10.0.2.2:8000/restaurant/show-json-restaurant/?page=$page'
           'https://southfeast-production.up.railway.app/restaurant/show-json-restaurant/?page=$page'
-          '${kecamatan != null && kecamatan != 'all' ? '&kecamatan=$kecamatan' : ''}'
           '${search != null && search.isNotEmpty ? '&search=$search' : ''}');
 
-      print('Raw API Response: $response'); // Debug print
-
       if (response != null) {
-        // Parse restaurants directly from the 'restaurants' key
-        final List<dynamic> restaurantsJson = response['restaurants'] ?? [];
-        return restaurantsJson.map((json) => Restaurant.fromMap(json)).toList();
+        // Cast the response to Map<String, dynamic>
+        if (response is Map) {
+          Map<String, dynamic> castedResponse = Map<String, dynamic>.from(response);
+          return Restaurant.fromJson(castedResponse);
+        }
+        // If it's a string, parse it
+        else if (response is String) {
+          return Restaurant.fromJson(json.decode(response));
+        }
       }
-      return [];
+      throw Exception('Invalid response format');
+    } catch (e, stackTrace) {
+      print('Error details: $e');
+      print('Stack trace: $stackTrace');
+      throw Exception('Failed to fetch restaurants: $e');
+    }
+  }
+
+  static Future<RestaurantElement> fetchRestaurantDetail(
+    CookieRequest request,
+    int restaurantId,
+  ) async {
+    try {
+      final response = await request.get(
+      'https://southfeast-production.up.railway.app/restaurant/get-restaurant/$restaurantId/'
+      );
+      if (response != null) {
+        if (response is Map) {
+          Map<String, dynamic> castedResponse = Map<String, dynamic>.from(response);
+          return RestaurantElement.fromJson(castedResponse);
+        } else if (response is String) {
+          return RestaurantElement.fromJson(json.decode(response));
+        }
+      }
+      throw Exception('Invalid response format');
     } catch (e) {
-      print('Error fetching restaurants: $e');
-      throw Exception('Failed to fetch restaurants');
+      print('Error details: $e');
+      throw Exception('Failed to fetch restaurant detail: $e');
     }
   }
 }

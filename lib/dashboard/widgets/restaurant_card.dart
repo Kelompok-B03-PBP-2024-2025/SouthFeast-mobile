@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant_model.dart';
+import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 import 'package:southfeast_mobile/dashboard/screens/restaurant_detail_screen.dart';
 
 class RestaurantCard extends StatelessWidget {
-  final Restaurant restaurant;
+  final RestaurantElement restaurant;
   final double imageSize;
   final double horizontalPadding;
   final double fontSize;
+  final VoidCallback onRefresh;
 
   const RestaurantCard({
     required this.restaurant,
     required this.imageSize,
     required this.horizontalPadding,
     required this.fontSize,
+    required this.onRefresh,
     Key? key,
   }) : super(key: key);
 
@@ -26,15 +28,20 @@ class RestaurantCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: InkWell(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => RestaurantDetailScreen(
-                  restaurantName: restaurant.name,
+                  restaurant: restaurant,
+                  isStaff: true, // Adjust based on your actual user role
+                  isAuthenticated: true, // Adjust based on authentication status
+                  onRefresh: onRefresh,
                 ),
               ),
             );
+            // Call refresh regardless of result to ensure latest data
+            onRefresh();
           },
           child: Container(
             decoration: BoxDecoration(
@@ -105,7 +112,7 @@ class RestaurantCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Rp${restaurant.minPrice.toStringAsFixed(0)} - ${restaurant.maxPrice.toStringAsFixed(0)}',
+                        'Rp${restaurant.minPrice} - ${restaurant.maxPrice}',
                         style: TextStyle(
                           fontSize: fontSize - 2,
                           fontWeight: FontWeight.bold,

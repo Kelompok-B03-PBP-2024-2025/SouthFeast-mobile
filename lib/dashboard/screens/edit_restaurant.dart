@@ -138,7 +138,7 @@ class _EditRestaurantFormState extends State<EditRestaurantForm> {
                             setState(() => _isLoading = true);
                             try {
                               final response = await request.postJson(
-                                'https://southfeast-production.up.railway.app/restaurant/edit-restaurant/${widget.restaurant['name']}/',
+                                'http://127.0.0.1:8000/dashboard/edit-restaurant-flutter/${widget.restaurant['name']}/',
                                 jsonEncode({
                                   'name': _name,
                                   'location': _location,
@@ -148,25 +148,14 @@ class _EditRestaurantFormState extends State<EditRestaurantForm> {
 
                               if (response['status'] == 'success') {
                                 if (context.mounted) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      title: const Text('Success'),
-                                      content: const Text('Restaurant updated successfully!'),
-                                      actions: [
-                                        TextButton(
-                                          child: const Text('OK'),
-                                          onPressed: () {
-                                            Navigator.pop(context); // Close dialog
-                                            Navigator.pop(context, true); // Return true to previous screen
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                  // Return updated data
+                                  final updatedData = {
+                                    ...widget.restaurant,
+                                    'name': _name,
+                                    'location': _location,
+                                    'kecamatan': _kecamatan,
+                                  };
+                                  Navigator.pop(context, updatedData);
                                 }
                               }
                             } catch (e) {

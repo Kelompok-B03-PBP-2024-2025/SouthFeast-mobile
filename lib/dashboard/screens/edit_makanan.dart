@@ -266,18 +266,18 @@ class _EditMakananFormState extends State<EditMakananForm> {
 
                                         if (response['status'] == 'success') {
                                           if (context.mounted) {
-                                            // Buat objek Result baru dari response
-                                            final updatedResult = Result(
-                                              id: widget.makanan['id'],
-                                              name: _name,
-                                              description: _description,
-                                              price: _price.toString(),
-                                              image: _image,
-                                              category: _category,
-                                              restaurantName: _restaurant_name,
-                                              kecamatan: _kecamatan,
-                                              location: _location,
-                                            );
+                                            // Create an updated data object
+                                            final updatedData = {
+                                              'id': widget.makanan['id'],
+                                              'name': _name,
+                                              'description': _description,
+                                              'price': _price.toString(),
+                                              'image': _image,
+                                              'category': _category,
+                                              'restaurant_name': _restaurant_name,
+                                              'kecamatan': _kecamatan,
+                                              'location': _location,
+                                            };
 
                                             showDialog(
                                               context: context,
@@ -294,9 +294,9 @@ class _EditMakananFormState extends State<EditMakananForm> {
                                                     child: const Text('OK'),
                                                     onPressed: () {
                                                       Navigator.pop(
-                                                          context); // tutup dialog
+                                                          context); // Close dialog
                                                       Navigator.pop(context,
-                                                          updatedResult); // kembali ke detail dengan data baru
+                                                          updatedData); // Return to previous screen with updated data
                                                     },
                                                   ),
                                                 ],

@@ -81,8 +81,19 @@ class _DetailMakananState extends State<DetailMakanan> {
     );
 
     if (editResult != null) {
+      // Convert the edit result to a Result object
       setState(() {
-        currentResult = editResult as Result;
+        currentResult = Result(
+          id: editResult['id'],
+          name: editResult['name'],
+          description: editResult['description'],
+          price: editResult['price'],
+          image: editResult['image'],
+          category: editResult['category'],
+          restaurantName: editResult['restaurant_name'],
+          kecamatan: editResult['kecamatan'],
+          location: editResult['location'],
+        );
       });
       if (widget.onUpdate != null) {
         widget.onUpdate!();

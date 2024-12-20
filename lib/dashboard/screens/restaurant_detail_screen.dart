@@ -3,26 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
 import 'package:southfeast_mobile/dashboard/screens/detail_makanan.dart';
 import 'package:southfeast_mobile/dashboard/screens/edit_restaurant.dart';
-import 'package:southfeast_mobile/restaurant/models/restaurant_detail/restaurant_detail.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:southfeast_mobile/dashboard/screens/makanan_form.dart';
 import 'package:southfeast_mobile/dashboard/screens/edit_makanan.dart';
 import 'package:southfeast_mobile/widgets/custom_bottom_nav.dart';
 import 'package:southfeast_mobile/config/menu_config.dart';
 import 'package:southfeast_mobile/authentication/screens/login.dart';
+import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart'; 
+import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
-  final String restaurantName;
+  final RestaurantElement restaurant;
   final bool isStaff;
   final bool isAuthenticated;
+  final VoidCallback? onRefresh;
 
   const RestaurantDetailScreen({
     Key? key, 
-    required this.restaurantName,
-    this.isStaff = false,
-    this.isAuthenticated = false,
+    required this.restaurant,
+    this.isStaff = true,
+    this.isAuthenticated = true,
+    this.onRefresh,
   }) : super(key: key);
 
   @override
@@ -30,45 +32,27 @@ class RestaurantDetailScreen extends StatefulWidget {
 }
 
 class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
-  RestaurantDetail? restaurantDetail;
-  bool isLoading = true;
-  String? error;
+  // Add restaurant state
+  late RestaurantElement _restaurant;
   late int _selectedIndex = widget.isStaff ? 1 : 0;
 
   @override
   void initState() {
     super.initState();
-    fetchRestaurantDetail();
+    _restaurant = widget.restaurant;
   }
 
-  Future<void> fetchRestaurantDetail() async {
+  Future<void> _refreshRestaurantData() async {
     final request = context.read<CookieRequest>();
-    
-    try {
+    final updatedRestaurant = await RestaurantService.fetchRestaurantDetail(
+      request,
+      _restaurant.id,
+    );
+    if (updatedRestaurant != null && mounted) {
       setState(() {
-        isLoading = true;
+        _restaurant = updatedRestaurant;
       });
-
-      final response = await request.get(
-        'https://southfeast-production.up.railway.app/restaurant/restaurant-detail-json/${widget.restaurantName}/'
-      );
-
-      if (response != null) {
-        setState(() {
-          restaurantDetail = RestaurantDetail.fromJson(response);
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          error = 'Failed to load restaurant data';
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        error = 'Error: $e';
-        isLoading = false;
-      });
+      widget.onRefresh?.call(); // Notify parent of update
     }
   }
 
@@ -76,296 +60,310 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Restaurant Detail"),
+        title: const Text("Restaurant Detail"),
         titleTextStyle: const TextStyle(color: Colors.white),
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.black,
         elevation: 0,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-              ? Center(child: Text(error!))
-              : SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Restaurant Header Card
-                      Container(
-                        color: Colors.black,
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    restaurantDetail?.restaurant?.name ?? 'N/A',
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.white),
-                                  onPressed: () async {
-                                    final result = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EditRestaurantForm(
-                                          restaurant: restaurantDetail?.restaurant?.toJson() ?? {}
-                                        ),
-                                      ),
-                                    );
-                                    
-                                    if (result == true && mounted) {
-                                      fetchRestaurantDetail(); // Refresh the data
-                                    }
-                                  },
-                                ),
-                              ],
+      body: RefreshIndicator(
+        onRefresh: _refreshRestaurantData,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Restaurant Header Card
+              Container(
+                color: Colors.black,
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _restaurant.name, // Use state instead of widget
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on, color: Colors.white),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    '${restaurantDetail?.restaurant?.kecamatan ?? 'N/A'} - ${restaurantDetail?.restaurant?.location ?? 'N/A'}',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-
-                      // Stats Cards
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            _buildStatCard(
-                              'Menu Items',
-                              '${restaurantDetail?.stats?.menuCount ?? 0}',
-                              Icons.restaurant_menu,
-                            ),
-                            const SizedBox(width: 16),
-                            _buildStatCard(
-                              'Avg Price',
-                              'Rp${restaurantDetail?.stats?.avgPrice?.toStringAsFixed(0) ?? 'N/A'}',
-                              Icons.payments,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Menu Items Section
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Menu Items',
-                                  style: Theme.of(context).textTheme.titleLarge,
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.white),
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditRestaurantForm(
+                                  restaurant: _restaurant.toJson() // Use state
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: restaurantDetail?.menuItems?.length ?? 0,
-                              itemBuilder: (context, index) {
-                                final menuItem = restaurantDetail?.menuItems?[index];
-                                final screenWidth = MediaQuery.of(context).size.width;
-                                final imageSize = screenWidth < 360 ? 80.0 : screenWidth < 600 ? 100.0 : 120.0;
-                                final horizontalPadding = screenWidth < 360 ? 8.0 : 12.0;
-                                final fontSize = screenWidth < 360 ? 14.0 : 16.0;
-
-                                return Card(
-                                  elevation: 4,
-                                  margin: EdgeInsets.symmetric(
-                                    vertical: horizontalPadding * 0.5,
-                                    horizontal: horizontalPadding,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
-                                    child: Slidable(
-                                      endActionPane: ActionPane(
-                                        motion: const ScrollMotion(),
-                                        extentRatio: 0.5,
-                                        children: [
-                                          CustomSlidableAction(
-                                            flex: 1,
-                                            onPressed: (_) => _handleEdit(menuItem),
-                                            backgroundColor: Colors.blue.shade400,
-                                            foregroundColor: Colors.white,
-                                            child: const Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.edit),
-                                                SizedBox(height: 4),
-                                                Text('Edit', style: TextStyle(fontSize: 12)),
-                                              ],
-                                            ),
-                                          ),
-                                          CustomSlidableAction(
-                                            flex: 1,
-                                            onPressed: (_) => _handleDelete(menuItem),
-                                            backgroundColor: Colors.red.shade400,
-                                            foregroundColor: Colors.white,
-                                            child: const Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.delete),
-                                                SizedBox(height: 4),
-                                                Text('Delete', style: TextStyle(fontSize: 12)),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      child: InkWell(
-                                        onTap: () async {
-                                          final result = await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => DetailMakanan(
-                                                result: Result(
-                                                  id: menuItem?.id,
-                                                  name: menuItem?.name,
-                                                  description: menuItem?.description,
-                                                  price: menuItem?.price,
-                                                  image: menuItem?.image,
-                                                  category: menuItem?.category,
-                                                  restaurantName: restaurantDetail?.restaurant?.name,
-                                                  kecamatan: restaurantDetail?.restaurant?.kecamatan,
-                                                  location: restaurantDetail?.restaurant?.location,
-                                                ),
-                                                onUpdate: () => fetchRestaurantDetail(), isStaff: true, isAuthenticated: true,
-                                              ),
-                                            ),
-                                          );
-
-                                          if (result == true) {
-                                            fetchRestaurantDetail();
-                                          }
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(15),
-                                            gradient: LinearGradient(
-                                              colors: [Colors.white, Colors.grey.shade50],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.all(horizontalPadding),
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(12),
-                                                child: SizedBox(
-                                                  width: imageSize,
-                                                  height: imageSize,
-                                                  child: menuItem?.image != null
-                                                      ? Image.network(
-                                                          menuItem!.image!,
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder: (context, error, stackTrace) {
-                                                            return Container(
-                                                              color: Colors.grey.shade200,
-                                                              child: Icon(
-                                                                Icons.broken_image_outlined,
-                                                                size: imageSize * 0.4,
-                                                                color: Colors.grey,
-                                                              ),
-                                                            );
-                                                          },
-                                                        )
-                                                      : Container(
-                                                          color: Colors.grey.shade200,
-                                                          child: Icon(
-                                                            Icons.image_not_supported,
-                                                            size: imageSize * 0.4,
-                                                            color: Colors.grey,
-                                                          ),
-                                                        ),
-                                                ),
-                                              ),
-                                              SizedBox(width: horizontalPadding),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      menuItem?.name ?? 'Unnamed Item',
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        fontSize: fontSize,
-                                                        color: Colors.black87,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      menuItem?.category ?? 'No Category',
-                                                      style: TextStyle(
-                                                        fontSize: fontSize - 2,
-                                                        color: Colors.grey.shade600,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      'Rp${menuItem?.price ?? 'N/A'}',
-                                                      style: TextStyle(
-                                                        fontSize: fontSize - 2,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.green,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      menuItem?.description ?? 'No description',
-                                                      style: TextStyle(
-                                                        fontSize: fontSize - 2,
-                                                        color: Colors.grey.shade700,
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                              ),
+                            );
+                            
+                            if (result != null && mounted) {
+                              setState(() {
+                                _restaurant = RestaurantElement.fromJson(result);
+                              });
+                              // Ensure parent refreshes
+                              widget.onRefresh?.call();
+                              // Make sure changes propagate back
+                              
+                            }
+                          },
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${_restaurant.kecamatan} - ${_restaurant.location}', // Use state
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+
+              // Stats Cards
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    _buildStatCard(
+                      'Menu Items',
+                      '${_restaurant.menuCount}',
+                      Icons.restaurant_menu,
+                    ),
+                    const SizedBox(width: 16),
+                    _buildStatCard(
+                      'Avg Price',
+                      'Rp${_restaurant.avgPrice}',
+                      Icons.payments,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Menu Items Section
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Menu Items',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _restaurant.menus.length,
+                      itemBuilder: (context, index) {
+                        final menuItem = _restaurant.menus[index];
+                        final screenWidth = MediaQuery.of(context).size.width;
+                        final imageSize = screenWidth < 360 ? 80.0 : screenWidth < 600 ? 100.0 : 120.0;
+                        final horizontalPadding = screenWidth < 360 ? 8.0 : 12.0;
+                        final fontSize = screenWidth < 360 ? 14.0 : 16.0;
+
+                        return Card(
+                          elevation: 4,
+                          margin: EdgeInsets.symmetric(
+                            vertical: horizontalPadding * 0.5,
+                            horizontal: horizontalPadding,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: Slidable(
+                              endActionPane: ActionPane(
+                                motion: const ScrollMotion(),
+                                extentRatio: 0.5,
+                                children: [
+                                  CustomSlidableAction(
+                                    flex: 1,
+                                    onPressed: (_) => _handleEdit(menuItem),
+                                    backgroundColor: Colors.blue.shade400,
+                                    foregroundColor: Colors.white,
+                                    child: const Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.edit),
+                                        SizedBox(height: 4),
+                                        Text('Edit', style: TextStyle(fontSize: 12)),
+                                      ],
+                                    ),
+                                  ),
+                                  CustomSlidableAction(
+                                    flex: 1,
+                                    onPressed: (_) => _handleDelete(menuItem),
+                                    backgroundColor: Colors.red.shade400,
+                                    foregroundColor: Colors.white,
+                                    child: const Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.delete),
+                                        SizedBox(height: 4),
+                                        Text('Delete', style: TextStyle(fontSize: 12)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              child: InkWell(
+                                onTap: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DetailMakanan(
+                                        result: Result(
+                                          id: menuItem.id,
+                                          name: menuItem.name,
+                                          description: menuItem.description,
+                                          price: menuItem.price,
+                                          image: menuItem.image,
+                                          category: menuItem.category,
+                                          restaurantName: _restaurant.name,
+                                          kecamatan: _restaurant.kecamatan,
+                                          location: _restaurant.location,
+                                        ),
+                                        onUpdate: () => {}, isStaff: true, isAuthenticated: true,
+                                      ),
+                                    ),
+                                  );
+
+                                  if (result == true) {
+                                    final request = context.read<CookieRequest>();
+                                    final updatedRestaurant = await RestaurantService.fetchRestaurantDetail(
+                                      request,
+                                      _restaurant.id,
+                                    );
+                                    if (updatedRestaurant != null && mounted) {
+                                      setState(() {
+                                        _restaurant = updatedRestaurant;
+                                      });
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    gradient: LinearGradient(
+                                      colors: [Colors.white, Colors.grey.shade50],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                  ),
+                                  padding: EdgeInsets.all(horizontalPadding),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: SizedBox(
+                                          width: imageSize,
+                                          height: imageSize,
+                                          child: menuItem.image != null
+                                              ? Image.network(
+                                                  menuItem.image!,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Container(
+                                                      color: Colors.grey.shade200,
+                                                      child: Icon(
+                                                        Icons.broken_image_outlined,
+                                                        size: imageSize * 0.4,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    );
+                                                  },
+                                                )
+                                              : Container(
+                                                  color: Colors.grey.shade200,
+                                                  child: Icon(
+                                                    Icons.image_not_supported,
+                                                    size: imageSize * 0.4,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      SizedBox(width: horizontalPadding),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              menuItem.name ?? 'Unnamed Item',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: fontSize,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              menuItem.category ?? 'No Category',
+                                              style: TextStyle(
+                                                fontSize: fontSize - 2,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Rp${menuItem.price ?? 'N/A'}',
+                                              style: TextStyle(
+                                                fontSize: fontSize - 2,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.green,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              menuItem.description ?? 'No description',
+                                              style: TextStyle(
+                                                fontSize: fontSize - 2,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       bottomNavigationBar: CustomBottomNavigationBar(
         menuItems: MenuConfig.getMenuItems(
           isStaff: widget.isStaff,
@@ -417,27 +415,29 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   }
 
   Future<void> _handleEdit(dynamic menuItem) async {
+    if (!mounted) return;
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditMakananForm(
           makanan: {
-            'id': menuItem?.id,
-            'name': menuItem?.name,
-            'description': menuItem?.description,
-            'price': menuItem?.price,
-            'image': menuItem?.image,
-            'category': menuItem?.category,
-            'restaurant_name': restaurantDetail?.restaurant?.name,
-            'kecamatan': restaurantDetail?.restaurant?.kecamatan,
-            'location': restaurantDetail?.restaurant?.location,
+            'id': menuItem.id,
+            'name': menuItem.name ?? '',
+            'description': menuItem.description ?? '',
+            'price': menuItem.price ?? '0',
+            'image': menuItem.image ?? '',
+            'category': menuItem.category ?? '',
+            'restaurant_name': _restaurant.name,
+            'kecamatan': _restaurant.kecamatan,
+            'location': _restaurant.location,
           },
         ),
       ),
     );
     
-    if (result != null) {
-      fetchRestaurantDetail(); // Refresh the data after successful edit
+    if (result != null && mounted) {
+      await _refreshRestaurantData(); // Refresh local data
     }
   }
 
@@ -457,7 +457,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             TextButton(
               child: const Text('Delete'),
               style: ButtonStyle(
-                foregroundColor: WidgetStateProperty.all<Color>(Colors.red),
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.red),
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
@@ -476,7 +476,29 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
               const SnackBar(content: Text('Item deleted successfully')),
             );
           }
-          fetchRestaurantDetail();
+          
+          // Check remaining menu items after deletion
+          final updatedRestaurant = await RestaurantService.fetchRestaurantDetail(
+            request,
+            _restaurant.id,
+          );
+          
+          if (updatedRestaurant != null) {
+            if (updatedRestaurant.menus.isEmpty) {
+              // If no menu items left, pop back to previous screen
+              if (context.mounted) {
+                Navigator.pop(context, true);
+              }
+            } else {
+              // If there are still menu items, update the current screen
+              if (context.mounted) {
+                setState(() {
+                  _restaurant = updatedRestaurant;
+                });
+                widget.onRefresh?.call();
+              }
+            }
+          }
         } else {
           throw Exception(response['message'] ?? 'Unknown error');
         }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
-import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant_model.dart';
+import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart';
 import 'package:southfeast_mobile/dashboard/widgets/restaurant_list.dart';
 import 'package:southfeast_mobile/dashboard/widgets/restaurant_filter_bar.dart';
@@ -15,23 +15,13 @@ class RestaurantPage extends StatefulWidget {
 class _RestaurantPageState extends State<RestaurantPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  List<Restaurant> _restaurants = [];
-  List<String> _kecamatans = [
-    'all',
-    'Cilandak',
-    'Jagakarsa',
-    'Kebayoran Baru',
-    'Kebayoran Lama',
-    'Mampang Prapatan',
-    'Pancoran',
-    'Pasar Minggu',
-    'Setiabudi',
-    'Tebet'
-  ];
+  List<RestaurantElement> _restaurants = [];
+  List<String> _kecamatans = ['all'];
   String _selectedKecamatan = 'all';
   bool _isLoading = false;
   int _currentPage = 1;
   bool _hasNext = true;
+  int _totalPages = 1;
 
   @override
   void initState() {
@@ -59,23 +49,25 @@ class _RestaurantPageState extends State<RestaurantPage> {
       final request = context.read<CookieRequest>();
       print('Fetching restaurants - Page: $page, Search: ${_searchController.text}, Kecamatan: $_selectedKecamatan}');
       
-      final restaurants = await RestaurantService.fetchRestaurants(
+      final restaurantData = await RestaurantService.fetchRestaurants(
         request,
         search: _searchController.text,
         kecamatan: _selectedKecamatan,
         page: page,
       );
 
-      print('Received ${restaurants.length} restaurants'); // Debug print
+      print('Received ${restaurantData.restaurants.length} restaurants'); // Debug print
 
       setState(() {
         if (page == 1) {
-          _restaurants = restaurants;
+          _restaurants = restaurantData.restaurants;
+          _kecamatans = ['all', ...restaurantData.kecamatans];
         } else {
-          _restaurants.addAll(restaurants);
+          _restaurants.addAll(restaurantData.restaurants);
         }
-        _currentPage = page;
-        _hasNext = restaurants.isNotEmpty;
+        _currentPage = restaurantData.currentPage;
+        _hasNext = restaurantData.hasNext;
+        _totalPages = restaurantData.totalPages;
         _isLoading = false;
       });
       
@@ -88,6 +80,15 @@ class _RestaurantPageState extends State<RestaurantPage> {
         SnackBar(content: Text('Error fetching restaurants: $e')),
       );
     }
+  }
+
+  Future<void> _refreshData() async {
+    setState(() {
+      _currentPage = 1;
+      _restaurants.clear();
+      _isLoading = true;  // Add loading state
+    });
+    await _fetchRestaurants();
   }
 
   void _applyFilters() {
@@ -115,17 +116,12 @@ class _RestaurantPageState extends State<RestaurantPage> {
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async {
-                setState(() {
-                  _currentPage = 1;
-                  _restaurants.clear();
-                });
-                await _fetchRestaurants();
-              },
+              onRefresh: _refreshData,
               child: RestaurantList(
                 restaurants: _restaurants,
                 scrollController: _scrollController,
                 isLoading: _isLoading,
+                onRefresh: () => _refreshData(),  // Use _refreshData directly
               ),
             ),
           ),

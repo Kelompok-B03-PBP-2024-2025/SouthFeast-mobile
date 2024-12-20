@@ -1,28 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant_model.dart';
+import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 import 'package:southfeast_mobile/dashboard/widgets/restaurant_card.dart';
 
 class RestaurantList extends StatelessWidget {
-  final List<Restaurant> restaurants;
+  final List<RestaurantElement> restaurants;
   final ScrollController scrollController;
   final bool isLoading;
+  final VoidCallback onRefresh;
 
   const RestaurantList({
     required this.restaurants,
     required this.scrollController,
     required this.isLoading,
+    required this.onRefresh,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    print(
-        'RestaurantList build - restaurants length: ${restaurants.length}'); // Debug print
+    if (isLoading && restaurants.isEmpty) {
+      return const Center(
+        child: Text(
+          'Loading...',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    }
 
     if (restaurants.isEmpty) {
-      print('No restaurants in the list'); // Debug print
       return const Center(
-        child: Text('No restaurants found'),
+        child: Text(
+          'No restaurants found',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
       );
     }
 
@@ -52,6 +68,7 @@ class RestaurantList extends StatelessWidget {
                   imageSize: imageSize,
                   horizontalPadding: horizontalPadding,
                   fontSize: fontSize,
+                  onRefresh: onRefresh, // Pass callback here
                 ),
               );
             },
@@ -59,7 +76,13 @@ class RestaurantList extends StatelessWidget {
           if (isLoading)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0),
-              child: CircularProgressIndicator(),
+              child: Text(
+                'Loading...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
             ),
         ],
       ),

@@ -52,7 +52,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -71,7 +70,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           ),
           const Divider(),
 
-          // Category Filter
           const Text(
             'Category',
             style: TextStyle(
@@ -98,7 +96,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           ),
           const SizedBox(height: 20),
 
-          // Location Filter
           const Text(
             'Location',
             style: TextStyle(
@@ -125,7 +122,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           ),
           const SizedBox(height: 20),
 
-          // Price Range
           const Text(
             'Price Range',
             style: TextStyle(
@@ -163,7 +159,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           ),
           const SizedBox(height: 20),
 
-          // Apply Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

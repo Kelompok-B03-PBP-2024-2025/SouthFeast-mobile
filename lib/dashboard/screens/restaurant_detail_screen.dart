@@ -247,22 +247,19 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                                           kecamatan: _restaurant.kecamatan,
                                           location: _restaurant.location,
                                         ),
-                                        onUpdate: () => {}, isStaff: true, isAuthenticated: true,
+                                        onUpdate: () async {
+                                          // Add async callback
+                                          await _refreshRestaurantData();
+                                          return true; // Return true to indicate successful update
+                                        }, 
+                                        isStaff: true, 
+                                        isAuthenticated: true,
                                       ),
                                     ),
                                   );
 
                                   if (result == true) {
-                                    final request = context.read<CookieRequest>();
-                                    final updatedRestaurant = await RestaurantService.fetchRestaurantDetail(
-                                      request,
-                                      _restaurant.id,
-                                    );
-                                    if (updatedRestaurant != null && mounted) {
-                                      setState(() {
-                                        _restaurant = updatedRestaurant;
-                                      });
-                                    }
+                                    await _refreshRestaurantData();
                                   }
                                 },
                                 child: Container(
@@ -480,26 +477,20 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             );
           }
           
-          // Check remaining menu items after deletion
           final updatedRestaurant = await RestaurantService.fetchRestaurantDetail(
             request,
             _restaurant.id,
           );
           
-          if (updatedRestaurant != null) {
-            if (updatedRestaurant.menus.isEmpty) {
-              // If no menu items left, pop back to previous screen
-              if (context.mounted) {
-                Navigator.pop(context, true);
-              }
+          if (updatedRestaurant != null && mounted) {
+            if (updatedRestaurant.menuCount == 0) {
+              widget.onRefresh?.call(); 
+              Navigator.pop(context, true); // Go back if no menus left
             } else {
-              // If there are still menu items, update the current screen
-              if (context.mounted) {
-                setState(() {
-                  _restaurant = updatedRestaurant;
-                });
-                widget.onRefresh?.call();
-              }
+              setState(() {
+                _restaurant = updatedRestaurant;
+              });
+              widget.onRefresh?.call();
             }
           }
         } else {

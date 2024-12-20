@@ -139,7 +139,7 @@ class _EditRestaurantFormState extends State<EditRestaurantForm> {
                             try {
                               final response = await request.postJson(
                                 // 'http://127.0.0.1:8000/dashboard/edit-restaurant-flutter/${widget.restaurant['name']}/',
-                                'https://southfeast-production.up.railway.app/edit-restaurant-flutter/${widget.restaurant['name']}/',
+                                'https://southfeast-production.up.railway.app/dashboard/edit-restaurant-flutter/${widget.restaurant['name']}/',
                                 jsonEncode({
                                   'name': _name,
                                   'location': _location,

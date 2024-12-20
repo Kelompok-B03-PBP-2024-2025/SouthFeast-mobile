@@ -10,6 +10,7 @@ class Result {
   String? image;
   String? restaurantName;
   String? location;
+  int? restaurantId;
 
   Result({
     this.id,
@@ -21,6 +22,8 @@ class Result {
     this.image,
     this.restaurantName,
     this.location,
+    this.restaurantId,
+
   });
 
   factory Result.fromMap(Map<String, dynamic> data) => Result(
@@ -33,6 +36,7 @@ class Result {
         image: data['image'] as String?,
         restaurantName: data['restaurant_name'] as String?,
         location: data['location'] as String?,
+        restaurantId: data['restaurant_id'] as int?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -45,6 +49,7 @@ class Result {
         'image': image,
         'restaurant_name': restaurantName,
         'location': location,
+        'restaurant_id': restaurantId,
       };
 
   /// `dart:convert`

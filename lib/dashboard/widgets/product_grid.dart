@@ -7,6 +7,7 @@ import 'package:southfeast_mobile/dashboard/screens/detail_makanan.dart'; // Add
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:southfeast_mobile/dashboard/screens/restaurant_detail_screen.dart';  // Add this import
 import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
+import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart';
 class ProductGrid extends StatelessWidget {
   final List<Result> products;
   final ScrollController scrollController;
@@ -268,37 +269,33 @@ class ProductGrid extends StatelessWidget {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: InkWell(
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => RestaurantDetailScreen(
-                                                  restaurant: RestaurantElement(
-                                                    id: -1, // Since we don't have this info from product
-                                                    name: product.restaurantName ?? '',
-                                                    kecamatan: product.kecamatan ?? '',
-                                                    location: product.location ?? '',
-                                                    menuCount: 1, // Default value since we don't have this info
-                                                    minPrice: '0',
-                                                    maxPrice: '0',
-                                                    avgPrice: '0',
-                                                    image: '', // We don't have restaurant image from product
-                                                    menus: [
-                                                      Menu(
-                                                        id: product.id ?? -1,
-                                                        name: product.name ?? '',
-                                                        price: product.price ?? '',
-                                                        image: product.image ?? '',
-                                                        category: product.category ?? '',
-                                                        description: product.description ?? '',
-                                                      )
-                                                    ],
+                                          onTap: () async {
+                                            try {
+                                              final request = context.read<CookieRequest>();
+                                              // Fetch full restaurant details using RestaurantService
+                                              final restaurantDetail = await RestaurantService.fetchRestaurantDetail(
+                                                request,
+                                                product.restaurantId ?? -1,
+                                              );
+                                              if (context.mounted) {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => RestaurantDetailScreen(
+                                                      restaurant: restaurantDetail,
+                                                      isStaff: true,
+                                                      isAuthenticated: true,
+                                                    ),
                                                   ),
-                                                  isStaff: true,
-                                                  isAuthenticated: true,
-                                                ),
-                                              ),
-                                            );
+                                                );
+                                              }
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(content: Text('Error loading restaurant: $e')),
+                                                );
+                                              }
+                                            }
                                           },
                                           child: Text(
                                             product.restaurantName ?? 'N/A',

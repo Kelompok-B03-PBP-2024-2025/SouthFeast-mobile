@@ -60,11 +60,14 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Restaurant Detail"),
-        titleTextStyle: const TextStyle(color: Colors.white),
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Colors.black,
-        elevation: 0,
+      title: const Text(
+        "Restaurant Detail",
+        style: TextStyle(fontSize:22), // Increased font size
+      ),
+      titleTextStyle: const TextStyle(color: Colors.white),
+      iconTheme: const IconThemeData(color: Colors.white),
+      backgroundColor: Colors.black,
+      elevation: 0,
       ),
       body: RefreshIndicator(
         onRefresh: _refreshRestaurantData,

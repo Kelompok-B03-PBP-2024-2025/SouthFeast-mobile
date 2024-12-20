@@ -64,8 +64,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
     try {
       final response = await request.get(
-          // 'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
-          'https://southfeast-production.up.railway.app/dashboard/show-json/?page=$page&'
+          'http://127.0.0.1:8000/dashboard/show-json/?page=$page&'
+          // 'https://southfeast-production.up.railway.app/dashboard/show-json/?page=$page&'
           'search=${_searchController.text}&'
           'category=$_selectedCategory&'
           'kecamatan=$_selectedKecamatan&'
@@ -156,7 +156,7 @@ class _DashboardPageState extends State<DashboardPage> {
           // Conditional content
           Expanded(
             child: _showRestaurants
-                ? RestaurantPage()
+                ? const RestaurantPage(key: PageStorageKey('restaurant_page'))
                 : Column(
                     children: [
                       SearchFilterBar(

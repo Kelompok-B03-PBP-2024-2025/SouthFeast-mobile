@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:http/http.dart' as http;
+import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart';
+import 'package:southfeast_mobile/restaurant/screens/restaurant_detail.dart';
+import 'package:southfeast_mobile/screens/root_page.dart';
+import 'package:southfeast_mobile/dashboard/screens/restaurant_detail_screen.dart';
+import 'package:southfeast_mobile/review/models/review_entry.dart';
+import 'package:southfeast_mobile/review/screens/detail_review.dart';
+import 'package:southfeast_mobile/dashboard/models/product/product.dart';
+import 'package:southfeast_mobile/dashboard/models/product/result.dart';
+import 'package:southfeast_mobile/product/screens/detail_makanan.dart';
+import 'package:southfeast_mobile/product/screens/product.dart';
 
 class DummyArticle {
   final String image;
@@ -75,9 +88,15 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
   ];
 
+  final List<int> restaurantIds = [46, 36, 26]; // Added restaurant IDs
+  late Future<List<ReviewEntry>> _reviewsFuture;
+  late Future<List<Result>> _productsFuture;
+
   @override
   void initState() {
     super.initState();
+    _reviewsFuture = fetchReviews();
+    _productsFuture = fetchProducts();
     Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted) {
         setState(() {
@@ -85,6 +104,41 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     });
+  }
+
+  Future<List<ReviewEntry>> fetchReviews() async {
+    try {
+      const baseUrl = 'https://southfeast-production.up.railway.app/review/json/';
+      final url = Uri.parse(baseUrl);
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final allReviews = reviewEntryFromJson(response.body);
+        // Take only first 5 reviews
+        return allReviews.take(5).toList();
+      } else {
+        throw Exception('Failed to load reviews');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Result>> fetchProducts() async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.get(
+        'https://southfeast-production.up.railway.app/dashboard/show-json/?page=1'
+      );
+      
+      if (response != null) {
+        final Product productData = Product.fromMap(response);
+        return productData.results ?? [];
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Failed to load products: $e');
+    }
   }
 
   @override
@@ -97,7 +151,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.width < 600;
-    final bottomPadding = MediaQuery.of(context).padding.bottom + 80;
 
     return Scaffold(
       extendBody: true,
@@ -291,7 +344,38 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Navigate to all restaurants
+                          final request = context.read<CookieRequest>();
+                          bool isAuthenticated = request.loggedIn;
+                          bool isStaff = request.jsonData?['is_staff'] ?? false;
+                          
+                          if (isStaff) {
+                            // For staff, navigate to RootPage with dashboard index
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RootPage(
+                                  isStaff: isStaff,
+                                  isAuthenticated: isAuthenticated,
+                                  initialIndex: 1, // Dashboard index
+                                  showRestaurants: true, // Add this parameter to show restaurants
+                                ),
+                              ),
+                              (route) => false,
+                            );
+                          } else {
+                            // For non-staff, navigate to regular restaurant page
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RootPage(
+                                  isStaff: false,
+                                  isAuthenticated: isAuthenticated,
+                                  initialIndex: 2,
+                                ),
+                              ),
+                              (route) => false,
+                            );
+                          }
                         },
                         child: const Text(
                           'See All →',
@@ -312,53 +396,97 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     itemCount: restaurants.length,
                     itemBuilder: (context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  topRight: Radius.circular(8),
-                                ),
-                                child: Image.network(
-                                  restaurants[index].image,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    restaurants[index].name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                      return GestureDetector(
+                        onTap: () async {
+                          final request = context.read<CookieRequest>();
+                          bool isStaff = request.jsonData?['is_staff'] ?? false;
+                          try {
+                            final restaurant = await RestaurantService.fetchRestaurantDetail(
+                              request,
+                              restaurantIds[index],
+                            );
+                            if (mounted) {
+                              if (isStaff) {
+                                // Staff users go to dashboard restaurant detail
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RestaurantDetailAdmin(
+                                      restaurant: restaurant,
+                                      isStaff: true,
+                                      isAuthenticated: true,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    restaurants[index].address,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 12,
+                                );
+                              } else {
+                                // Regular users go to customer restaurant detail
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RestaurantDetailScreen(
+                                      restaurant: restaurant,
+                                      isAuthenticated: request.loggedIn,
                                     ),
                                   ),
-                                ],
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Failed to load restaurant details'),
                               ),
-                            ),
-                          ],
+                            );
+                          }
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(8),
+                                    topRight: Radius.circular(8),
+                                  ),
+                                  child: Image.network(
+                                    restaurants[index].image,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      restaurants[index].name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      restaurants[index].address,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -367,94 +495,139 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
 
+            // Add spacing between sections
+            const SizedBox(height: 32),
+
+            // Products Section (only for non-admin users)
+            if (!(context.read<CookieRequest>().jsonData?['is_staff'] ?? false))
+              _buildProductsSection(),
+
             // Reviews Section
             Container(
-              color: Colors.grey[100],
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 24,
-                bottom: 24 + bottomPadding,
-              ),
+              color: Colors.black, // Changed to black
+              padding: const EdgeInsets.all(24), // Removed bottomPadding
               child: Column(
                 children: [
                   const Text(
                     'User Reviews',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 24, 
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Added white color
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   const Text(
                     'See what others are saying about our menu items.',
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.white70), // Changed to white70
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
                   SizedBox(
                     height: 280,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: isSmallScreen ? screenSize.width * 0.8 : 300,
-                          margin: const EdgeInsets.only(right: 16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'John Doe',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                    child: FutureBuilder<List<ReviewEntry>>(
+                      future: _reviewsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text('Error: ${snapshot.error}'));
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(child: Text('No reviews available'));
+                        }
+
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            final review = snapshot.data![index];
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetailReviewPage(
+                                      review: review,
+                                      isStaff: context.read<CookieRequest>().jsonData?['is_staff'] ?? false,
                                     ),
                                   ),
-                                  Row(
-                                    children: List.generate(
-                                      5,
-                                      (i) => Icon(
-                                        Icons.star,
-                                        size: 16,
-                                        color: i < 4 ? Colors.amber : Colors.grey,
+                                );
+                              },
+                              child: Container(
+                                width: isSmallScreen ? screenSize.width * 0.8 : 300,
+                                margin: const EdgeInsets.only(right: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      spreadRadius: 1,
+                                      blurRadius: 5,
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          review.user,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Row(
+                                          children: List.generate(
+                                            5,
+                                            (i) => Icon(
+                                              Icons.star,
+                                              size: 16,
+                                              color: i < review.rating ? Colors.amber : Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      review.reviewText,
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Expanded(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: review.reviewImage != null
+                                          ? Image.network(
+                                              review.reviewImage!,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                Image.network(
+                                                  'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                                                  fit: BoxFit.cover,
+                                                  width: double.infinity,
+                                                ),
+                                            )
+                                          : Image.network(
+                                              'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                            ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Amazing food and great atmosphere! The service was exceptional and the prices were reasonable. Will definitely come back again.',
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 12),
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    'https://manual.co.id/wp-content/uploads/2023/12/scarlett_461-980x719.jpg',
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       },
                     ),
@@ -462,8 +635,168 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
+
+            // Add bottom spacing to prevent navbar overlap
+            const SizedBox(height: 100), // Added fixed bottom spacing
+
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProductsSection() {
+    return Container(
+      color: Colors.white, // Changed to white
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Related Products',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black, // Changed to black
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final request = context.read<CookieRequest>();
+                    bool isAuthenticated = request.loggedIn;
+                    bool isStaff = request.jsonData?['is_staff'] ?? false;
+                    
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RootPage(
+                          isStaff: isStaff,
+                          isAuthenticated: isAuthenticated,
+                          initialIndex: 1, // Product page index
+                        ),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text(
+                    'See All Products →',
+                    style: TextStyle(color: Colors.black), // Changed to black
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 280,
+            child: FutureBuilder<List<Result>>(
+              future: _productsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No products available'));
+                }
+
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final product = snapshot.data![index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailMakanan(
+                              result: product,
+                              isStaff: false,
+                              isAuthenticated: context.read<CookieRequest>().loggedIn,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 200,
+                        margin: const EdgeInsets.only(right: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Changed to white
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.1),
+                              spreadRadius: 1,
+                              blurRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(8),
+                              ),
+                              child: Image.network(
+                                product.image ?? 'https://via.placeholder.com/150',
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.name ?? 'No name',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.black, // Changed to black
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Rp ${product.price}',
+                                    style: const TextStyle(
+                                      color: Colors.black, // Changed to black
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    product.restaurantName ?? 'Unknown restaurant',
+                                    style: const TextStyle(
+                                      color: Colors.grey, // Changed to grey
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

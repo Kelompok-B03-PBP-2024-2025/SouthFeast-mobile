@@ -32,7 +32,7 @@ class RestaurantCard extends StatelessWidget {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => RestaurantDetailScreen(
+                builder: (context) => RestaurantDetailAdmin(
                   restaurant: restaurant,
                   isStaff: true, // Adjust based on your actual user role
                   isAuthenticated: true, // Adjust based on authentication status

@@ -281,7 +281,7 @@ class ProductGrid extends StatelessWidget {
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) => RestaurantDetailScreen(
+                                                    builder: (context) => RestaurantDetailAdmin(
                                                       restaurant: restaurantDetail,
                                                       isStaff: true,
                                                       isAuthenticated: true,

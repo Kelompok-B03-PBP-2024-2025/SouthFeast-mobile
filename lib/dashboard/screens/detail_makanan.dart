@@ -195,18 +195,14 @@ class _DetailMakananState extends State<DetailMakanan> {
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Image.network(
-                currentResult.image ?? '',
+                (currentResult.image != null && currentResult.image!.isNotEmpty)
+                    ? currentResult.image!
+                    : 'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[800],
-                    child: const Center(
-                      child: Icon(
-                        Icons.restaurant,
-                        size: 80,
-                        color: Colors.white54,
-                      ),
-                    ),
+                  return Image.network(
+                    'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                    fit: BoxFit.cover,
                   );
                 },
               ),
@@ -520,6 +516,70 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const String defaultImageUrl = 'https://southfeast-production.up.railway.app/static/image/default-review.jpg';
+    
+    Widget buildImageWidget() {
+      // If reviewImage is null, don't show any image section
+      if (review.reviewImage == null) {
+        return const SizedBox.shrink();
+      }
+
+      // If reviewImage is empty string, show default image
+      if (review.reviewImage!.isEmpty) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            defaultImageUrl,
+            width: double.infinity,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.image_not_supported,
+                  color: Colors.white54,
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+
+      // If reviewImage has a value, try to load it with fallback to default
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          review.reviewImage!,
+          width: double.infinity,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => Image.network(
+            defaultImageUrl,
+            width: double.infinity,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.image_not_supported,
+                  color: Colors.white54,
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Card(
       color: Colors.grey[850],
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -528,113 +588,56 @@ class ReviewCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // User info and rating section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        review.user,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
-                          Text(
-                            ' ${review.rating}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          if (isStaff) ...[
-                            const SizedBox(width: 8),
-                            IconButton(
-                              icon: const Icon(Icons.delete, size: 18),
-                              color: Colors.red,
-                              onPressed: () => _handleDeleteReview(context),
-                            ),
-                          ],
-                        ],
+                Text(
+                  review.user,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 18),
+                    Text(
+                      ' ${review.rating}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    if (isStaff) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete, size: 18),
+                        color: Colors.red,
+                        onPressed: () => _handleDeleteReview(context),
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ],
             ),
             const SizedBox(height: 8),
+            
+            // Review text
             Text(
               review.reviewText,
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 4),
+            
+            // Review date
             Text(
               review.createdAt.toString().substring(0, 10),
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
-            if (review.reviewImage != null) ...[
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  review.reviewImage!,
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Placeholder when image fails to load
-                    return Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[700],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.image_not_supported,
-                            size: 40,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Image not available',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[700],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / 
-                                loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+            
+            // Image section - only show if reviewImage is not null
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: buildImageWidget(),
+            ),
           ],
         ),
       ),

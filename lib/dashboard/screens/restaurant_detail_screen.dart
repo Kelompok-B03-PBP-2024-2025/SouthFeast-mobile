@@ -13,13 +13,13 @@ import 'package:southfeast_mobile/authentication/screens/login.dart';
 import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart'; 
 import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 
-class RestaurantDetailScreen extends StatefulWidget {
+class RestaurantDetailAdmin extends StatefulWidget {
   final RestaurantElement restaurant;
   final bool isStaff;
   final bool isAuthenticated;
   final VoidCallback? onRefresh;
 
-  const RestaurantDetailScreen({
+  const RestaurantDetailAdmin({
     Key? key, 
     required this.restaurant,
     this.isStaff = true,
@@ -28,10 +28,10 @@ class RestaurantDetailScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<RestaurantDetailScreen> createState() => _RestaurantDetailScreenState();
+  State<RestaurantDetailAdmin> createState() => _RestaurantDetailAdminState();
 }
 
-class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
+class _RestaurantDetailAdminState extends State<RestaurantDetailAdmin> {
   // Add restaurant state
   late RestaurantElement _restaurant;
   late int _selectedIndex = widget.isStaff ? 1 : 0;

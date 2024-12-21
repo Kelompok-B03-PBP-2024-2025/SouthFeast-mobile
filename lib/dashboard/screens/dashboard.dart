@@ -11,7 +11,12 @@ import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
 import 'package:southfeast_mobile/dashboard/screens/restaurant_page.dart'; // Add this import
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final bool initialShowRestaurants;
+  
+  const DashboardPage({
+    super.key, 
+    this.initialShowRestaurants = false,
+  });
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -38,6 +43,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    _showRestaurants = widget.initialShowRestaurants;
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final request = context.read<CookieRequest>();

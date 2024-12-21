@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
-// import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:southfeast_mobile/product/screens/product.dart';
-import 'package:southfeast_mobile/forum/screens/forum.dart';
-import 'package:southfeast_mobile/review/screens/review.dart';
-import 'package:southfeast_mobile/wishlist/screens/wishlist.dart';
-import 'package:southfeast_mobile/dashboard/screens/dashboard.dart';
-import 'package:southfeast_mobile/restaurant/screens/restaurant_page.dart';
-import 'package:southfeast_mobile/screens/homepage.dart';
 import 'package:southfeast_mobile/authentication/screens/login.dart';  // Add this import
 import '../widgets/app_bar.dart';
 import '../widgets/left_drawer.dart';  // Add this import
 import '../widgets/custom_bottom_nav.dart';
 import 'package:southfeast_mobile/config/menu_config.dart';
+import 'package:southfeast_mobile/dashboard/screens/dashboard.dart'; // Add this import
 
 class RootPage extends StatefulWidget {
   final bool isStaff;
   final bool isAuthenticated;
   final int initialIndex;
   final String? username;  // Add this
+  final bool showRestaurants; // Add this parameter
 
   const RootPage({
     super.key,
@@ -26,6 +19,7 @@ class RootPage extends StatefulWidget {
     required this.isAuthenticated,
     this.initialIndex = 0,  // Add this parameter with a default value of 0
     this.username,  // Add this
+    this.showRestaurants = false, // Add default value
   });
 
   @override
@@ -44,11 +38,21 @@ class _RootPageState extends State<RootPage> {
   }
 
   List<Map<String, dynamic>> _getMenuItems() {
-    return MenuConfig.getMenuItems(
+    final menuItems = MenuConfig.getMenuItems(
       isStaff: widget.isStaff,
       isAuthenticated: widget.isAuthenticated,
       username: widget.username,
     );
+
+    // If showRestaurants is true, modify the DashboardPage to show restaurants
+    if (widget.showRestaurants && widget.isStaff) {
+      final dashboardIndex = menuItems.indexWhere((item) => item['title'] == 'Dashboard');
+      if (dashboardIndex != -1) {
+        menuItems[dashboardIndex]['screen'] = DashboardPage(initialShowRestaurants: true);
+      }
+    }
+
+    return menuItems;
   }
 
   void _onItemTapped(int index) {

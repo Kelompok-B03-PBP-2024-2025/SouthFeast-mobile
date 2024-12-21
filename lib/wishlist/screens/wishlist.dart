@@ -1,8 +1,10 @@
 // lib/screens/wishlist.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import '../models/wishlist_collection.dart';
+import 'wishlist_detail.dart'; 
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -13,9 +15,16 @@ class WishlistPage extends StatefulWidget {
 
 class _WishlistPageState extends State<WishlistPage> {
   Future<WishlistCollection>? futureCollections;
-  final String baseUrl = 'https://southfeast-production.up.railway.app/wishlist';
-  final String apiURL = 'https://southfeast-production.up.railway.app/wishlist/json/';
-
+  // final String baseUrl = 'https://southfeast-production.up.railway.app/wishlist';
+  // final String apiURL = 'https://southfeast-production.up.railway.app/wishlist/json/';
+  // final String baseUrl = 'http://127.0.0.1:8000/wishlist';
+  // final String apiURL = 'http://127.0.0.1:8000/wishlist/json/';
+  // final String baseUrl = 'http://127.0.0.1:8000/wishlist';
+  // final String apiURL = 'http://127.0.0.1:8000/wishlist/json/';
+  //   // ...existing code...
+  final String baseUrl = 'http://10.0.2.2:8000/wishlist';
+  final String apiURL = 'http://10.0.2.2:8000/wishlist/json/';
+  // ...existing code...
   @override
   void initState() {
     super.initState();
@@ -43,6 +52,10 @@ class _WishlistPageState extends State<WishlistPage> {
         throw Exception('Response is null');
       }
 
+      // Tambahkan print untuk debug
+      print('Received collections: $response');
+
+      // Gunakan fromJson dari model baru
       return WishlistCollection.fromJson(response);
     } catch (e, stackTrace) {
       print('Error type: ${e.runtimeType}');
@@ -56,6 +69,88 @@ class _WishlistPageState extends State<WishlistPage> {
     setState(() {
       futureCollections = getCollections();
     });
+  }
+
+  Future<void> createCollection() async {
+    final request = context.read<CookieRequest>();
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create New Collection'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    hintText: 'Collection Name',
+                    labelText: 'Name',
+                  ),
+                ),
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    hintText: 'Collection Description (Optional)',
+                    labelText: 'Description',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Create'),
+              onPressed: () async {
+                final String name = nameController.text.trim();
+                final String description = descriptionController.text.trim();
+
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Collection name is required')),
+                  );
+                  return;
+                }
+
+                try {
+                  final response = await request.postJson(
+                    '$baseUrl/flutter/collections/create/',
+                    jsonEncode({  // Add jsonEncode here
+                      'name': name,
+                      'description': description,
+                    }),
+                  );
+                
+                  if (response['id'] != null) {
+                    // Reload collections after creating
+                    loadCollections();
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Collection "$name" created successfully')),
+                    );
+                  }
+                } catch (e) {
+                  print('Error creating collection: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to create collection: $e')),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget buildAuthenticatedContent() {
@@ -90,6 +185,7 @@ class _WishlistPageState extends State<WishlistPage> {
           );
         }
 
+        // Tambahkan pengecekan untuk results
         if (!snapshot.hasData || snapshot.data!.results.isEmpty) {
           return const Center(
             child: Text(
@@ -114,68 +210,80 @@ class _WishlistPageState extends State<WishlistPage> {
           itemCount: snapshot.data!.results.length,
           itemBuilder: (context, index) {
             final collection = snapshot.data!.results[index];
-            return Card(
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      color: Colors.grey[200],
-                      child: collection.items.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No items',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            )
-                          : GridView.count(
-                              crossAxisCount: 2,
-                              padding: const EdgeInsets.all(8),
-                              children: collection.items
-                                  .take(4)
-                                  .map((item) => Card(
-                                        child: Center(
-                                          child: Text(
-                                            item.menuItem.name,
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(fontSize: 10),
-                                          ),
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (context) => WishlistDetailPage(
+                      collection: collection,
                     ),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            collection.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            '${collection.itemsCount} items',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                );
+              },
+              child: Card(
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        color: Colors.grey[200],
+                        child: collection.items.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No items',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              )
+                            : GridView.count(
+                                crossAxisCount: 2,
+                                padding: const EdgeInsets.all(8),
+                                children: collection.items
+                                    .take(4)
+                                    .map((item) => Card(
+                                          child: Center(
+                                            child: Text(
+                                              item.menuItem.name,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(fontSize: 10),
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
                       ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              collection.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${collection.itemsCount} items',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -232,7 +340,7 @@ class _WishlistPageState extends State<WishlistPage> {
             icon: const Icon(Icons.add, color: Colors.black),
             onPressed: () async {
               if (await isAuthenticated()) {
-                // TODO: Implement add collection
+                createCollection(); // Panggil method createCollection yang baru
               } else {
                 Navigator.pushNamed(context, '/login');
               }

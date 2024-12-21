@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
+import 'package:southfeast_mobile/reservation/screens/reservation_viewall.dart';
 import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart';
 import 'package:southfeast_mobile/restaurant/widgets/restaurant_filter_bar.dart';
 import 'package:southfeast_mobile/restaurant/widgets/restaurant_grid.dart';
+import 'package:southfeast_mobile/reservation/screens/reservation_detail.dart';
 
 class RestaurantPage extends StatefulWidget {
   @override
@@ -114,6 +116,29 @@ class _RestaurantPageState extends State<RestaurantPage> {
             },
             onSearchSubmitted: (_) => _applyFilters(),
           ),
+          Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReservationViewAllScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.book_online),
+              label: const Text('My Reservations'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshData,
@@ -126,6 +151,20 @@ class _RestaurantPageState extends State<RestaurantPage> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ReservationViewAllScreen(),
+            ),
+          );
+        },
+        label: const Text('My Reservations'),
+        icon: const Icon(Icons.book_online),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
       ),
     );
   }

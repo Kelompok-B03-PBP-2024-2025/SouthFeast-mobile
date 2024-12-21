@@ -33,7 +33,7 @@ class _ReservationViewAllScreenState extends State<ReservationViewAllScreen> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get(
-        'http://localhost:8000/restaurant/show-json-reservations/',
+        'http://southfeast-production.up.railway.app/restaurant/show-json-reservations/',
       );
 
       if (mounted) {

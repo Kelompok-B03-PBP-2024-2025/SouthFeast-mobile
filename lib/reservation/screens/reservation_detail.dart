@@ -48,7 +48,7 @@ class _ReservationDetailScreenState extends State<ReservationDetailScreen> {
 
     try {
       final response = await request.post(
-        'http://localhost:8000/restaurant/cancel-reservation/${widget.reservation['id']}/',
+        'http://southfeast-production.up.railway.app/restaurant/cancel-reservation/${widget.reservation['id']}/',
         jsonEncode({}),
       );
 

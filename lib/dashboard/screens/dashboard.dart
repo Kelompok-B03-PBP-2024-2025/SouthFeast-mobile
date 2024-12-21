@@ -7,7 +7,7 @@ import 'package:southfeast_mobile/dashboard/screens/makanan_form.dart';
 import 'package:southfeast_mobile/dashboard/widgets/filter_bottom_sheet.dart';
 import 'package:southfeast_mobile/dashboard/widgets/product_grid.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
-import 'package:southfeast_mobile/restaurant/screens/restaurant.dart'; // Add this import
+import '../../restaurant/screens/restaurant_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});

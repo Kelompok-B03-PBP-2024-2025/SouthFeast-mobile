@@ -1,14 +1,9 @@
-// import 'package:southfeast_mobile/screens/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-// TODO: Import halaman RegisterPage jika sudah dibuat
+
 import 'package:southfeast_mobile/authentication/screens/register.dart';
 import 'package:southfeast_mobile/screens/root_page.dart';
-
-void main() {
-  runApp(const LoginApp());
-}
 
 class LoginApp extends StatelessWidget {
   const LoginApp({super.key});
@@ -68,6 +63,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 30.0),
+
+                  // Username
                   TextField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
@@ -81,6 +78,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 12.0),
+
+                  // Password
                   TextField(
                     controller: _passwordController,
                     decoration: const InputDecoration(
@@ -95,80 +94,83 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: true,
                   ),
                   const SizedBox(height: 24.0),
+
+                  // Button Login
                   ElevatedButton(
                     onPressed: () async {
-                      String username = _usernameController.text;
-                      String password = _passwordController.text;
+                      final username = _usernameController.text;
+                      final password = _passwordController.text;
 
-                      // gunakan URL http://10.0.2.2/ buat emulator Android Studio
-                      // final response = await request
-                      //     .login("http://10.0.2.2:8000/auth/api/login/", {
-                      //   'username': username,
-                      //   'password': password,
-                      // });
-                      final response = await request
-                          .login("https://southfeast-production.up.railway.app/auth/api/login/", {
-                        'username': username,
-                        'password': password,
-                      });
+                      // contoh pakai URL Production
+                      final response = await request.login(
+                        "https://southfeast-production.up.railway.app/auth/api/login/",
+                        {
+                          'username': username,
+                          'password': password,
+                        },
+                      );
 
                       if (request.loggedIn) {
-                        String message = response['message'];
-                        String uname = response['username'];
-                        if (context.mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RootPage(
-                                isStaff: response['is_staff'],
-                                isAuthenticated: true,
-                                username: uname, // Add this
-                              ),
+                        // Sukses login
+                        final message = response['message'];
+                        final uname = response['username'];
+                        final bool isStaff = response['is_staff'] ?? false;
+
+                        if (!mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RootPage(
+                              isStaff: isStaff,
+                              isAuthenticated: true,
+                              username: uname,
+                            ),
+                          ),
+                        );
+
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text("$message Selamat datang, $uname."),
                             ),
                           );
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(
-                              SnackBar(
-                                  content:
-                                      Text("$message Selamat datang, $uname.")),
-                            );
-                        }
                       } else {
-                        if (context.mounted) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Login Gagal'),
-                              content: Text(response['message']),
-                              actions: [
-                                TextButton(
-                                  child: const Text('OK'),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                        // Gagal login
+                        if (!mounted) return;
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Login Gagal'),
+                            content: Text(response['message']),
+                            actions: [
+                              TextButton(
+                                child: const Text('OK'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 50),
+                      minimumSize: const Size(double.infinity, 50),
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Login'),
                   ),
                   const SizedBox(height: 36.0),
+
+                  // Register link
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegisterPage()),
+                        MaterialPageRoute(builder: (context) => const RegisterPage()),
                       );
                     },
                     child: Text(

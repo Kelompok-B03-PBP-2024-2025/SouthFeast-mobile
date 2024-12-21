@@ -399,7 +399,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                             ),
                           ],
                         ),
-                      ),// here
+                      ),
                     ),
                   ],
                 ],

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Result {
-  int? id;
+  int id;
   String? name;
   String? description;
   String? price;
@@ -12,7 +12,7 @@ class Result {
   String? location;
 
   Result({
-    this.id,
+    required this.id,
     this.name,
     this.description,
     this.price,
@@ -24,7 +24,7 @@ class Result {
   });
 
   factory Result.fromMap(Map<String, dynamic> data) => Result(
-        id: data['id'] as int?,
+        id: data['id'] as int,
         name: data['name'] as String?,
         description: data['description'] as String?,
         price: data['price'] as String?,

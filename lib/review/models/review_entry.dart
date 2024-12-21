@@ -14,7 +14,7 @@ class ReviewEntry {
     String user;
     String reviewText;
     double rating;
-    dynamic imageUrl;
+    String? reviewImage;
     DateTime createdAt;
 
     ReviewEntry({
@@ -23,7 +23,7 @@ class ReviewEntry {
         required this.user,
         required this.reviewText,
         required this.rating,
-        required this.imageUrl,
+        required this.reviewImage,
         required this.createdAt,
     });
 
@@ -33,7 +33,7 @@ class ReviewEntry {
         user: json["user"],
         reviewText: json["review_text"],
         rating: json["rating"]?.toDouble(),
-        imageUrl: json["image_url"],
+        reviewImage: json["review_image"],
         createdAt: DateTime.parse(json["created_at"]),
     );
 
@@ -43,7 +43,7 @@ class ReviewEntry {
         "user": user,
         "review_text": reviewText,
         "rating": rating,
-        "image_url": imageUrl,
+        "review_image": reviewImage,
         "created_at": createdAt.toIso8601String(),
     };
 }

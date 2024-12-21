@@ -4,8 +4,8 @@ import 'package:southfeast_mobile/product/screens/detail_makanan.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
-// import 'package:southfeast_mobile/restaurant/screens/restaurant.dart';
 import 'package:southfeast_mobile/restaurant/screens/restaurant_detail.dart';
+import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart';
 
 class ProductGrid extends StatelessWidget {
   final List<Result> products;
@@ -15,6 +15,7 @@ class ProductGrid extends StatelessWidget {
   final bool isAdmin;
   final Set<int> wishlistedProducts;
   final Function(int) onWishlistToggle;
+  final VoidCallback onRefresh;
 
   const ProductGrid({
     super.key,
@@ -25,6 +26,7 @@ class ProductGrid extends StatelessWidget {
     required this.isAdmin,
     required this.wishlistedProducts,
     required this.onWishlistToggle,
+    required this.onRefresh,
   });
 
   @override
@@ -40,15 +42,15 @@ class ProductGrid extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75, // Diubah dari 0.62 untuk card yang lebih proporsional
-              crossAxisSpacing: 8, // Dikurangi dari 10
-              mainAxisSpacing: 8, // Dikurangi dari 10
+              childAspectRatio: 0.75,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
             itemCount: products.length,
             itemBuilder: (context, index) {
               Result product = products[index];
               bool isInWishlist = wishlistedProducts.contains(product.id);
-              
+
               return GestureDetector(
                 onTap: () async {
                   final refreshedData = await Navigator.push<Map<dynamic, dynamic>>(
@@ -63,17 +65,14 @@ class ProductGrid extends StatelessWidget {
                   );
 
                   if (refreshedData != null) {
-                    // Handle the refreshedData if needed
                     print("Data returned from DetailMakanan: $refreshedData");
                   }
-
-                  // Ensure no value is returned from this function
                 },
                 child: Card(
                   clipBehavior: Clip.antiAlias,
-                  elevation: 2, // Ditambahkan elevation yang lebih halus
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // Ditambahkan border radius
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +81,7 @@ class ProductGrid extends StatelessWidget {
                         children: [
                           Container(
                             width: double.infinity,
-                            height: 140, // Dikurangi dari 150
+                            height: 140,
                             color: Colors.grey[200],
                             child: product.image != null
                                 ? Image.network(
@@ -106,7 +105,7 @@ class ProductGrid extends StatelessWidget {
                             child: GestureDetector(
                               onTap: () => onWishlistToggle(product.id ?? 0),
                               child: Container(
-                                padding: const EdgeInsets.all(6), // Dikurangi dari 8
+                                padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.8),
                                   shape: BoxShape.circle,
@@ -114,7 +113,7 @@ class ProductGrid extends StatelessWidget {
                                 child: Icon(
                                   isInWishlist ? Icons.favorite : Icons.favorite_border,
                                   color: isInWishlist ? Colors.red : Colors.grey,
-                                  size: 18, // Dikurangi dari 20
+                                  size: 18,
                                 ),
                               ),
                             ),
@@ -132,7 +131,7 @@ class ProductGrid extends StatelessWidget {
                                 product.name ?? 'Unnamed Product',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12, // Dikurangi dari 13
+                                  fontSize: 12,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -143,53 +142,42 @@ class ProductGrid extends StatelessWidget {
                                 style: const TextStyle(
                                   color: Colors.green,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12, // Dikurangi dari 13
+                                  fontSize: 12,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               GestureDetector(
                                 behavior: HitTestBehavior.translucent,
-                                onTap: () {
-                                  final restaurantProducts = products.where(
-                                    (p) => p.restaurantName == product.restaurantName
-                                  ).toList();
+                                onTap: () async {
+                                  final request = context.read<CookieRequest>();
+                                  try {
+                                    final updatedRestaurant = await RestaurantService.fetchRestaurantByName(
+                                      request,
+                                      product.restaurantName ?? "Default Value",
+                                    );
 
-                                  Navigator.push(
-                                    context,
-                                     MaterialPageRoute(
-                                      builder: (context) => RestaurantDetailScreen(
-                                        restaurant: RestaurantElement(
-                                          id: -1, // Since we don't have this info from product
-                                          name: product.restaurantName ?? '',
-                                          kecamatan: product.kecamatan ?? '',
-                                          location: product.location ?? '',
-                                          menuCount: 1, // Default value since we don't have this info
-                                          minPrice: '0',
-                                          maxPrice: '0',
-                                          avgPrice: '0',
-                                          image: '', // We don't have restaurant image from product
-                                          menus: [
-                                            Menu(
-                                              id: product.id ?? -1,
-                                              name: product.name ?? '',
-                                              price: product.price ?? '',
-                                              image: product.image ?? '',
-                                              category: product.category ?? '',
-                                              description: product.description ?? '',
-                                            )
-                                          ],
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => RestaurantDetailScreen(
+                                          restaurant: updatedRestaurant,
+                                          isStaff: true,
+                                          isAuthenticated: true,
+                                          onRefresh: onRefresh,
                                         ),
-                                        isStaff: true,
-                                        isAuthenticated: true,
                                       ),
-                                    ),
-                                  );
+                                    );
+
+                                    onRefresh(); // Refresh the data after navigating back
+                                  } catch (e) {
+                                    print("Failed to fetch restaurant details: $e");
+                                  }
                                 },
                                 child: Row(
                                   children: [
                                     const Icon(
                                       Icons.restaurant,
-                                      size: 12, // Dikurangi dari 14
+                                      size: 12,
                                       color: Colors.grey,
                                     ),
                                     const SizedBox(width: 4),
@@ -198,7 +186,7 @@ class ProductGrid extends StatelessWidget {
                                         product.restaurantName ?? 'N/A',
                                         style: TextStyle(
                                           color: Colors.blue[700],
-                                          fontSize: 11, // Dikurangi dari 12
+                                          fontSize: 11,
                                           decoration: TextDecoration.underline,
                                         ),
                                         maxLines: 1,
@@ -213,7 +201,7 @@ class ProductGrid extends StatelessWidget {
                                 children: [
                                   const Icon(
                                     Icons.location_on,
-                                    size: 12, // Dikurangi dari 14
+                                    size: 12,
                                     color: Colors.grey,
                                   ),
                                   const SizedBox(width: 4),
@@ -222,7 +210,7 @@ class ProductGrid extends StatelessWidget {
                                       product.kecamatan ?? 'N/A',
                                       style: TextStyle(
                                         color: Colors.grey[600],
-                                        fontSize: 11, // Dikurangi dari 12
+                                        fontSize: 11,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,

@@ -24,6 +24,8 @@ class _ProductPageState extends State<ProductPage> {
   bool _hasNext = false;
   bool _isLoading = false;
   Set<int> _wishlistedProducts = {};
+  List<Map<String, dynamic>> _reservations = [];
+  String? _error;
   final ScrollController _scrollController = ScrollController();
 
   final TextEditingController _minPriceController = TextEditingController();
@@ -124,6 +126,34 @@ class _ProductPageState extends State<ProductPage> {
     }
   }
 
+  Future<void> _fetchReservations() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.get(
+        'http://southfeast-production.up.railway.app/restaurant/show-json-reservations/',
+      );
+
+      if (mounted) {
+        setState(() {
+          _reservations = List<Map<String, dynamic>>.from(response['reservations']);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Error loading reservations: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   void _applyFilters() {
     _currentPage = 1;
     final request = context.read<CookieRequest>();
@@ -133,80 +163,85 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          SearchFilterBar(
-            searchController: _searchController,
-            categories: _categories,
-            selectedCategory: _selectedCategory,
-            onCategorySelected: (value) {
-              setState(() {
-                _selectedCategory = value;
-              });
-              _applyFilters();
-            },
-            kecamatans: _kecamatans,
-            selectedKecamatan: _selectedKecamatan,
-            onKecamatanSelected: (value) {
-              setState(() {
-                _selectedKecamatan = value;
-              });
-              _applyFilters();
-            },
-            onFilterPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                builder: (BuildContext context) {
-                  return FilterBottomSheet(
-                    minPriceController: _minPriceController,
-                    maxPriceController: _maxPriceController,
-                    categories: _categories,
-                    selectedCategory: _selectedCategory,
-                    onCategorySelected: (value) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    },
-                    kecamatans: _kecamatans,
-                    selectedKecamatan: _selectedKecamatan,
-                    onKecamatanSelected: (value) {
-                      setState(() {
-                        _selectedKecamatan = value;
-                      });
-                    },
-                    onApplyFilters: _applyFilters,
-                  );
-                },
-              );
-            },
-            onSearchSubmitted: (value) {
-              _applyFilters();
-            },
-          ),
-          Expanded(
-            child: _products.isEmpty && !_isLoading
-                ? const Center(child: Text('No products found'))
-                : ProductGrid(
-                    products: _products,
-                    scrollController: _scrollController,
-                    isLoading: _isLoading,
-                    onUpdate: () {
-                      _currentPage = 1;
-                      fetchProducts(context.read<CookieRequest>(), page: 1);
-                    },
-                    isAdmin: false,
-                    wishlistedProducts: _wishlistedProducts,
-                    onWishlistToggle: _toggleWishlist,
+      body: RefreshIndicator(
+        onRefresh: _fetchReservations,
+        child: Column(
+          children: [
+            SearchFilterBar(
+              searchController: _searchController,
+              categories: _categories,
+              selectedCategory: _selectedCategory,
+              onCategorySelected: (value) {
+                setState(() {
+                  _selectedCategory = value;
+                });
+                _applyFilters();
+              },
+              kecamatans: _kecamatans,
+              selectedKecamatan: _selectedKecamatan,
+              onKecamatanSelected: (value) {
+                setState(() {
+                  _selectedKecamatan = value;
+                });
+                _applyFilters();
+              },
+              onFilterPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
-          ),
-        ],
+                  builder: (BuildContext context) {
+                    return FilterBottomSheet(
+                      minPriceController: _minPriceController,
+                      maxPriceController: _maxPriceController,
+                      categories: _categories,
+                      selectedCategory: _selectedCategory,
+                      onCategorySelected: (value) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      },
+                      kecamatans: _kecamatans,
+                      selectedKecamatan: _selectedKecamatan,
+                      onKecamatanSelected: (value) {
+                        setState(() {
+                          _selectedKecamatan = value;
+                        });
+                      },
+                      onApplyFilters: _applyFilters,
+                    );
+                  },
+                );
+              },
+              onSearchSubmitted: (value) {
+                _applyFilters();
+              },
+            ),
+            Expanded(
+              child: _products.isEmpty && !_isLoading
+                  ? const Center(child: Text('No products found'))
+                  : ProductGrid(
+                      products: _products,
+                      scrollController: _scrollController,
+                      isLoading: _isLoading,
+                      onUpdate: () {
+                        _currentPage = 1;
+                        fetchProducts(context.read<CookieRequest>(), page: 1);
+                      },
+                      isAdmin: false,
+                      wishlistedProducts: _wishlistedProducts,
+                      onWishlistToggle: _toggleWishlist,
+                      onRefresh: () {},
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 
   @override
   void dispose() {

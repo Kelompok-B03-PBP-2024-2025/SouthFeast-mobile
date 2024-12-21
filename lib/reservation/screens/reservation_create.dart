@@ -45,7 +45,7 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
     try {
       // Menggunakan endpoint yang sudah ada
       final response = await request.get(
-        'http://localhost:8000/restaurant/get/${widget.restaurantId}/'
+        'http://southfeast-production.up.railway.app/restaurant/get/${widget.restaurantId}/'
       );
       
       // Mengambil daftar menu dari response
@@ -107,7 +107,7 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
 
       // Menggunakan endpoint create_reservation yang sudah ada
       final response = await request.post(
-        'http://localhost:8000/restaurant/create-reservation/${widget.restaurantId}/',
+        'http://southfeast-production.up.railway.app/restaurant/create-reservation/${widget.restaurantId}/',
         jsonEncode({
           'date': dateStr,
           'time': timeStr,

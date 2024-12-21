@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
-
-// Import model ReviewEntry
 import 'package:southfeast_mobile/review/models/review_entry.dart';
 import 'package:southfeast_mobile/review/screens/detail_review.dart';
 
 class ReviewPage extends StatefulWidget {
-  // Parameter opsional jika Anda ingin melewatkan info login, dsb.
   final bool isStaff;
   final bool isAuthenticated;
   final String? username;
@@ -33,25 +30,21 @@ class _ReviewPageState extends State<ReviewPage> {
     _reviewsFuture = fetchReviews();
   }
 
-  /// Contoh fungsi untuk mengambil data review dari API Django
   Future<List<ReviewEntry>> fetchReviews([String query = '']) async {
-      try {
-    // Misal endpoint Anda: https://example.com/review/show_json/
-    // Lalu kita tambahkan query param `search` untuk filtering (opsional).
-    const baseUrl = 'https://southfeast-production.up.railway.app/review/json/';
-    final url = Uri.parse('$baseUrl?search=$query');
+    try {
+      const baseUrl = 'https://southfeast-production.up.railway.app/review/json/';
+      final url = Uri.parse('$baseUrl?search=$query');
+      final response = await http.get(url);
 
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      return reviewEntryFromJson(response.body);
-    } else {
-      throw Exception('Failed to load reviews');
+      if (response.statusCode == 200) {
+        return reviewEntryFromJson(response.body);
+      } else {
+        throw Exception('Failed to load reviews');
+      }
+    } catch (e) {
+      rethrow;
     }
-  } catch (e) {
-    rethrow;
   }
-}
 
   void _onSearch() {
     setState(() {
@@ -62,7 +55,6 @@ class _ReviewPageState extends State<ReviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Body page untuk menampilkan reviews
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -73,16 +65,12 @@ class _ReviewPageState extends State<ReviewPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox(
                     height: 300,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: Center(child: CircularProgressIndicator()),
                   );
                 } else if (snapshot.hasError) {
                   return SizedBox(
                     height: 300,
-                    child: Center(
-                      child: Text('Error: ${snapshot.error}'),
-                    ),
+                    child: Center(child: Text('Error: ${snapshot.error}')),
                   );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return SizedBox(
@@ -106,7 +94,6 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  // Bagian hero, meniru tampilan background + teks di Django
   Widget _buildHeroSection(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     return Stack(
@@ -120,13 +107,11 @@ class _ReviewPageState extends State<ReviewPage> {
             fit: BoxFit.cover,
           ),
         ),
-        // Overlay warna hitam
         Container(
           height: screenHeight * 0.5,
           width: double.infinity,
           color: Colors.black.withOpacity(0.5),
         ),
-        // Tulisan
         Positioned.fill(
           child: Center(
             child: Column(
@@ -135,7 +120,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 const Text(
                   'Reviews',
                   style: TextStyle(
-                    fontFamily: 'La Belle Aurore', // Pastikan font terinstall
+                    fontFamily: 'La Belle Aurore',
                     color: Colors.white,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -157,8 +142,7 @@ class _ReviewPageState extends State<ReviewPage> {
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   onPressed: () {
-                    // Scroll ke review section
-                    // Cara paling sederhana: Scrollable.ensureVisible(...)
+                    // Aksi tombol "See Reviews" (mis. scroll ke bawah)
                   },
                   child: const Text('See Reviews'),
                 ),
@@ -170,7 +154,6 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  // Bagian untuk menampilkan Search Bar + Grid Review
   Widget _buildReviewsSection(
       BuildContext context, List<ReviewEntry> reviews) {
     return Padding(
@@ -190,7 +173,6 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  // Search Bar
   Widget _buildSearchBar() {
     return Row(
       children: [
@@ -221,7 +203,6 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  // Grid Review
   Widget _buildReviewGrid(BuildContext context, List<ReviewEntry> reviews) {
     return LayoutBuilder(
       builder: (ctx, constraints) {
@@ -252,50 +233,40 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  // Card satuan Review
   Widget _buildReviewCard(ReviewEntry review) {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-      // Layout card
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Bagian gambar
           Expanded(
-            child: review.reviewImage != null
+            child: (review.reviewImage != null)
                 ? Image.network(
                     review.reviewImage!,
                     fit: BoxFit.cover,
+                    // Jika gambar error, gunakan fallback
                     errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.restaurant,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
+                      return Image.network(
+                        'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                        fit: BoxFit.cover,
                       );
                     },
                   )
-                : Container(
-                    color: Colors.grey[300],
-                    child: const Icon(
-                      Icons.restaurant,
-                      size: 50,
-                      color: Colors.grey,
-                    ),
+                : Image.network(
+                    'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                    fit: BoxFit.cover,
                   ),
           ),
-          // Bagian konten
+          // Konten
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Baris user + rating
+                // Baris: user + rating
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -316,7 +287,6 @@ class _ReviewPageState extends State<ReviewPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-
                 // Menu item
                 Text(
                   review.menuItem,
@@ -327,35 +297,33 @@ class _ReviewPageState extends State<ReviewPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-
-                // Truncated review text
+                // Review text (truncated)
                 Text(
                   review.reviewText,
-                  maxLines: 3, // meniru truncate multiple lines
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.black87),
                 ),
                 const SizedBox(height: 8),
-
-                // Tanggal (createdAt)
+                // Tanggal
                 Text(
                   'Posted on: ${review.createdAt.toString().substring(0, 10)}',
                   style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
-
-                // Tombol
+                // Tombol "View More"
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () {
+                        // Tampilkan detail review
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => DetailReviewPage(
-                              review: review, 
-                              isStaff: widget.isStaff,         // Opsional jika Anda ingin menampilkan tombol "Delete" hanya untuk staff
+                              review: review,
+                              isStaff: widget.isStaff,
                             ),
                           ),
                         );
@@ -365,19 +333,6 @@ class _ReviewPageState extends State<ReviewPage> {
                         style: TextStyle(color: Colors.blue),
                       ),
                     ),
-                    // Kondisional jika user == current user (untuk edit)
-                    // ElevatedButton(
-                    //   onPressed: () {
-                    //     // Navigate ke edit page
-                    //   },
-                    //   style: ElevatedButton.styleFrom(
-                    //     backgroundColor: Colors.black,
-                    //     foregroundColor: Colors.white,
-                    //     padding: const EdgeInsets.symmetric(
-                    //         horizontal: 8, vertical: 4),
-                    //   ),
-                    //   child: const Text('Edit Review'),
-                    // ),
                   ],
                 ),
               ],

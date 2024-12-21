@@ -20,9 +20,7 @@ class RestaurantService {
         if (response is Map) {
           Map<String, dynamic> castedResponse = Map<String, dynamic>.from(response);
           return Restaurant.fromJson(castedResponse);
-        }
-        // If it's a string, parse it
-        else if (response is String) {
+        } else if (response is String) {
           return Restaurant.fromJson(json.decode(response));
         }
       }
@@ -57,4 +55,64 @@ class RestaurantService {
       throw Exception('Failed to fetch restaurant detail: $e');
     }
   }
+
+  static Future<RestaurantElement> fetchRestaurantByName(
+    CookieRequest request,
+    String restaurantName,
+  ) async {
+    int page = 1;
+
+    try {
+      print('Searching for restaurant: $restaurantName');
+
+      while (true) {
+        // Fetch the restaurant data from the API for the current page
+        final response = await request.get(
+          'https://southfeast-production.up.railway.app/restaurant/show-json-restaurant/?page=$page',
+        );
+
+        // Check if response is not null
+        if (response != null) {
+          // Cast response to a Map
+          final castedResponse = Map<String, dynamic>.from(response);
+
+          // Access the list of restaurants
+          final restaurantList = castedResponse['restaurants'] as List<dynamic>?;
+
+          // If there are no restaurants, break the loop
+          if (restaurantList == null || restaurantList.isEmpty) {
+            print('No more restaurants found on page $page');
+            break;
+          }
+
+          for (final restaurant in restaurantList) {
+            // Convert each restaurant to a RestaurantElement
+            final element = RestaurantElement.fromJson(
+              Map<String, dynamic>.from(restaurant as Map),
+            );
+
+            // Check if the restaurant name matches
+            if (element.name.toLowerCase() == restaurantName.toLowerCase()) {
+              return element; // Return the matching restaurant
+            }
+          }
+
+          // Increment the page number to fetch the next page
+          page++;
+        } else {
+          print('No response received on page $page');
+          break; // Stop if the response is null
+        }
+      }
+
+      // Throw an exception if the restaurant is not found
+      throw Exception('Restaurant with name "$restaurantName" not found');
+    } catch (e, stackTrace) {
+      print('Error details: $e');
+      print('Stack trace: $stackTrace');
+      throw Exception('Failed to fetch restaurant by name: $e');
+    }
+  }
+
+
 }

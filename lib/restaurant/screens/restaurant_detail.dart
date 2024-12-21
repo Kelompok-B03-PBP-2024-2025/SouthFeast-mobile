@@ -333,28 +333,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        menuItems: MenuConfig.getMenuItems(
-          isStaff: widget.isStaff,
-          isAuthenticated: widget.isAuthenticated,
-          username: null,
-        ),
-        selectedIndex: _selectedIndex,
-        onTap: (index) {
-          if (index != _selectedIndex) {
-            Navigator.pop(context);
-          }
-        },
-        isAuthenticated: widget.isAuthenticated,
-        onAuthCheck: (context, item) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-          );
-        },
-      ),
-      extendBody: true,
+      )
     );
   }
 

@@ -10,7 +10,8 @@ class RootPage extends StatefulWidget {
   final bool isStaff;
   final bool isAuthenticated;
   final int initialIndex;
-  final String? username;  // Add this
+  final String? username;
+  final int? userID;  // Add this
   final bool showRestaurants; // Add this parameter
 
   const RootPage({
@@ -20,6 +21,7 @@ class RootPage extends StatefulWidget {
     this.initialIndex = 0,  // Add this parameter with a default value of 0
     this.username,  // Add this
     this.showRestaurants = false, // Add default value
+    this.userID
   });
 
   @override

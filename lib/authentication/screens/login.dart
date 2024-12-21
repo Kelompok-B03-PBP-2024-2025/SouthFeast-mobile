@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       // contoh pakai URL Production
                       final response = await request.login(
-                        "https://southfeast-production.up.railway.app/auth/api/login/",
+                        "http://10.0.2.2:8000/auth/api/login/",
                         {
                           'username': username,
                           'password': password,
@@ -113,8 +113,10 @@ class _LoginPageState extends State<LoginPage> {
                       if (request.loggedIn) {
                         // Sukses login
                         final message = response['message'];
+                        final user_id = response['id'];
                         final uname = response['username'];
                         final bool isStaff = response['is_staff'] ?? false;
+                        print("User ID: $user_id, Username: $uname, isStaff: $isStaff");
 
                         if (!mounted) return;
                         Navigator.pushReplacement(
@@ -124,6 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                               isStaff: isStaff,
                               isAuthenticated: true,
                               username: uname,
+                              userID: user_id,
                             ),
                           ),
                         );

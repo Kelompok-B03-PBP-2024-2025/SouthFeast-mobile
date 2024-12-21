@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
+import 'package:southfeast_mobile/review/screens/review_form.dart'; // Impor ReviewFormPage
 
 class Review {
   final String userName;
@@ -34,6 +35,16 @@ class _DetailMakananState extends State<DetailMakanan> {
   void initState() {
     super.initState();
     currentResult = widget.result;
+  }
+
+  // Fungsi untuk navigasi ke ReviewFormPage dengan mengirimkan menuItemId
+  void _navigateToReviewForm() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReviewFormPage(menuItemId: currentResult.id),
+      ),
+    );
   }
 
   @override
@@ -99,7 +110,7 @@ class _DetailMakananState extends State<DetailMakanan> {
                       BoxShadow(
                         offset: const Offset(0, 4),
                         blurRadius: 15,
-                        color: Colors.black,
+                        color: Colors.black.withOpacity(0.5),
                       ),
                     ],
                   ),
@@ -146,10 +157,17 @@ class _DetailMakananState extends State<DetailMakanan> {
 
                 Container(
                   padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        offset: const Offset(0, 4),
+                        blurRadius: 15,
+                        color: Colors.black.withOpacity(0.5),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,10 +181,36 @@ class _DetailMakananState extends State<DetailMakanan> {
                         ),
                       ),
                       const Divider(color: Colors.grey),
-                      ...reviews.map((review) => ReviewCard(review: review)),
+                      ...reviews.map((review) => ReviewCard(review: review)).toList(),
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
+
+                // Button "Add Review"
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _navigateToReviewForm,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ), // Warna latar belakang tombol
+                      ),
+                      child: const Text(
+                        'Add Review',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20), // Memberikan ruang di bawah tombol
               ],
             ),
           ),
@@ -227,11 +271,15 @@ class ReviewCard extends StatelessWidget {
     return Card(
       color: Colors.grey[850],
       margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header dengan nama pengguna dan rating
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -240,25 +288,29 @@ class ReviewCard extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
                 Row(
                   children: [
-                    Icon(Icons.star, color: Colors.amber, size: 18),
+                    const Icon(Icons.star, color: Colors.amber, size: 18),
+                    const SizedBox(width: 4),
                     Text(
-                      ' ${review.rating}',
-                      style: const TextStyle(color: Colors.white),
+                      '${review.rating}',
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                     ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 8),
+            // Komentar review
             Text(
               review.comment,
-              style: const TextStyle(color: Colors.white70),
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 4),
+            // Tanggal review
             Text(
               review.date,
               style: TextStyle(color: Colors.grey[400], fontSize: 12),

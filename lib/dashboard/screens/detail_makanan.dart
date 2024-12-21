@@ -6,6 +6,9 @@ import 'package:southfeast_mobile/authentication/screens/login.dart';
 import 'package:southfeast_mobile/config/menu_config.dart';  // Add this import
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:southfeast_mobile/review/models/review_entry.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // Dummy Review Model (To be replaced with actual model later)
 class Review {
@@ -44,14 +47,42 @@ class _DetailMakananState extends State<DetailMakanan> {
   late Result currentResult;
   // Update index calculation to match Dashboard position
   late int _selectedIndex = widget.isStaff ? 1 : 0;
+  late Future<List<ReviewEntry>> _reviewsFuture;
 
   @override
   void initState() {
     super.initState();
-    currentResult = widget.result;
+    currentResult = widget.result; // Initialize currentResult first
+    _reviewsFuture = fetchReviews(); // Then call fetchReviews
   }
 
-  // Remove _getMenuItems() as we'll use MenuConfig instead
+  Future<List<ReviewEntry>> fetchReviews() async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.get(
+        'http://10.0.2.2:8000/dashboard/get-reviews-flutter/${currentResult.id}/',
+      );
+
+      if (response != null) {
+        if (response is Map) {
+          final List<dynamic> reviewsJson = response['reviews'];
+          return reviewsJson.map((reviewJson) => ReviewEntry(
+            id: reviewJson['id'],
+            menuItem: currentResult.name ?? '',
+            user: reviewJson['user'],
+            reviewText: reviewJson['content'],
+            rating: reviewJson['rating'].toDouble(),
+            reviewImage: reviewJson['image'],
+            createdAt: DateTime.parse(reviewJson['created_at']),
+          )).toList();
+        }
+      }
+      throw Exception('Invalid response format');
+    } catch (e) {
+      print('Error fetching reviews: $e');
+      return [];
+    }
+  }
 
   void _onItemTapped(int index) {
     if (index != _selectedIndex) {
@@ -131,19 +162,8 @@ class _DetailMakananState extends State<DetailMakanan> {
     );
 
     if (confirm == true && context.mounted) {
-      // final response = await request.get(
-      //   'http://127.0.0.1:8000/dashboard/delete-makanan-flutter/${currentResult.id}/',
-      // );
-      // if (response['status'] == 'success') {
-      //   if (widget.onUpdate != null) {
-      //     widget.onUpdate!();
-      //   }
-      //   if (context.mounted) {
-      //     Navigator.pop(context, true);
-      //   }
-      // }
       final response = await request.get(
-        'https://southfeast-production.up.railway.app/dashboard/delete-makanan-flutter/${currentResult.id}/',
+        'http://10.0.2.2:8000/dashboard/delete-makanan-flutter/${currentResult.id}/',
       );
       if (response['status'] == 'success') {
         if (widget.onUpdate != null) {
@@ -161,22 +181,6 @@ class _DetailMakananState extends State<DetailMakanan> {
     // Get the bottom navigation bar height
     final bottomNavHeight = MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight;
 
-    // Dummy reviews data
-    final List<Review> reviews = [
-      Review(
-        userName: "John Doe",
-        rating: 4.5,
-        comment: "Great food! Really enjoyed it.",
-        date: "2023-12-01",
-      ),
-      Review(
-        userName: "Jane Smith",
-        rating: 5.0,
-        comment: "Amazing taste and presentation!",
-        date: "2023-11-30",
-      ),
-    ];
-
     return Scaffold(
       extendBody: true,
       body: CustomScrollView(
@@ -193,6 +197,18 @@ class _DetailMakananState extends State<DetailMakanan> {
               background: Image.network(
                 currentResult.image ?? '',
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[800],
+                    child: const Center(
+                      child: Icon(
+                        Icons.restaurant,
+                        size: 80,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -327,7 +343,25 @@ class _DetailMakananState extends State<DetailMakanan> {
                         ),
                       ),
                       const Divider(color: Colors.grey),
-                      ...reviews.map((review) => ReviewCard(review: review)),
+                      FutureBuilder<List<ReviewEntry>>(
+                        future: _reviewsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.white));
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text('No reviews yet', style: TextStyle(color: Colors.white));
+                          }
+                          
+                          return Column(
+                            children: snapshot.data!.map((review) => ReviewCard(
+                              review: review,
+                              isStaff: widget.isStaff,
+                            )).toList(),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -400,11 +434,17 @@ class InfoRow extends StatelessWidget {
 
 // New Review Card Widget
 class ReviewCard extends StatelessWidget {
-  final Review review;
+  final ReviewEntry review;
+  final bool isStaff;
 
-  const ReviewCard({Key? key, required this.review}) : super(key: key);
+  const ReviewCard({
+    Key? key, 
+    required this.review,
+    required this.isStaff,
+  }) : super(key: key);
 
   Future<void> _handleDeleteReview(BuildContext context) async {
+    final request = context.read<CookieRequest>();
     final bool? confirm = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -433,8 +473,48 @@ class ReviewCard extends StatelessWidget {
     );
 
     if (confirm == true) {
-      // TODO: Implement review deletion
-      print('Review deletion confirmed');
+      try {
+        final response = await request.get(
+          'http://10.0.2.2:8000/dashboard/delete-review-flutter/${review.id}/',
+        );
+
+        if (response['status'] == 'success') {
+          // Refresh the parent widget to update the reviews list
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Review deleted successfully'),
+                backgroundColor: Colors.black,
+              ),
+            );
+            // Find the DetailMakanan widget and refresh reviews
+            final detailMakananState = context.findAncestorStateOfType<_DetailMakananState>();
+            if (detailMakananState != null) {
+              detailMakananState.setState(() {
+                detailMakananState._reviewsFuture = detailMakananState.fetchReviews();
+              });
+            }
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to delete review'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -456,7 +536,7 @@ class ReviewCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        review.userName,
+                        review.user,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -464,17 +544,19 @@ class ReviewCard extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 18),
+                          const Icon(Icons.star, color: Colors.amber, size: 18),
                           Text(
                             ' ${review.rating}',
                             style: const TextStyle(color: Colors.white),
                           ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.delete, size: 18),
-                            color: Colors.red,
-                            onPressed: () => _handleDeleteReview(context),
-                          ),
+                          if (isStaff) ...[
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 18),
+                              color: Colors.red,
+                              onPressed: () => _handleDeleteReview(context),
+                            ),
+                          ],
                         ],
                       ),
                     ],
@@ -484,14 +566,75 @@ class ReviewCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              review.comment,
+              review.reviewText,
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 4),
             Text(
-              review.date,
+              review.createdAt.toString().substring(0, 10),
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
+            if (review.reviewImage != null) ...[
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  review.reviewImage!,
+                  height: 150,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Placeholder when image fails to load
+                    return Container(
+                      height: 150,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.image_not_supported,
+                            size: 40,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Image not available',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      height: 150,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / 
+                                loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ],
         ),
       ),

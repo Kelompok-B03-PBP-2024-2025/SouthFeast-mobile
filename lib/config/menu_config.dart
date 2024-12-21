@@ -1,11 +1,11 @@
 
 import 'package:flutter/material.dart';
+import 'package:southfeast_mobile/restaurant/screens/restaurant_page.dart';
 import 'package:southfeast_mobile/screens/homepage.dart';
 import 'package:southfeast_mobile/dashboard/screens/dashboard.dart';
 import 'package:southfeast_mobile/review/screens/review.dart';
 import 'package:southfeast_mobile/forum/screens/forum.dart';
 import 'package:southfeast_mobile/product/screens/product.dart';
-import 'package:southfeast_mobile/restaurant/screens/restaurant.dart';
 import 'package:southfeast_mobile/wishlist/screens/wishlist.dart';
 
 class MenuConfig {
@@ -19,7 +19,8 @@ class MenuConfig {
         {
           "title": "Home",
           "icon": Icons.home,
-          "screen": HomePage(),
+          "screen": MyHomePage(
+          ),
           "requiresAuth": false,
         },
         {
@@ -46,7 +47,8 @@ class MenuConfig {
         {
           "title": "Home",
           "icon": Icons.home,
-          "screen": HomePage(),
+          "screen": MyHomePage(
+          ),
           "requiresAuth": false,
         },
         {
@@ -58,7 +60,7 @@ class MenuConfig {
         {
           "title": "Restaurant",
           "icon": Icons.restaurant,
-          "screen": const RestaurantPage(),
+          "screen": RestaurantPage(),
           "requiresAuth": false,
         },
         {

@@ -90,6 +90,14 @@ class DetailReviewPage extends StatelessWidget {
                       fit: BoxFit.cover,
                       // Batasi ukuran gambar
                       width: MediaQuery.of(context).size.width * 0.7,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          height: 200,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported, size: 50),
+                        );
+                      },
                     ),
                   ),
                 ),

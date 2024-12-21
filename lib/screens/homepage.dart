@@ -23,14 +23,14 @@ class DummyReview {
   DummyReview({required this.username, required this.rating, required this.text, this.image});
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _MyHomePageState extends State<MyHomePage> {
   int _currentImageIndex = 0;
   final ScrollController _scrollController = ScrollController();
   final List<String> _heroImages = [

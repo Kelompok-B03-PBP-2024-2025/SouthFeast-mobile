@@ -269,10 +269,24 @@ class _ReviewPageState extends State<ReviewPage> {
                 ? Image.network(
                     review.reviewImage!,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[300],
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
                   )
-                : Image.asset(
-                    'assets/default-review.jpg', // fallback local image
-                    fit: BoxFit.cover,
+                : Container(
+                    color: Colors.grey[300],
+                    child: const Icon(
+                      Icons.restaurant,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
                   ),
           ),
           // Bagian konten

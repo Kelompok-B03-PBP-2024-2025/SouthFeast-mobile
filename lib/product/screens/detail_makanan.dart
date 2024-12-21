@@ -37,7 +37,7 @@ class _DetailMakananState extends State<DetailMakanan> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get(
-        'http://10.0.2.2:8000/dashboard/get-reviews-flutter/${currentResult.id}/',
+        'https://southfeast-production.up.railway.app/dashboard/get-reviews-flutter/${currentResult.id}/',
       );
 
       if (response != null) {

@@ -1,13 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
 import 'dart:convert';
+// import 'dart:io'; // Hapus import ini
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class ReviewFormPage extends StatefulWidget {
-  final int menuItemId; // <-- Diterima dari halaman DetailMakanan
+  final int menuItemId;
 
   const ReviewFormPage({
     super.key,
@@ -23,7 +23,8 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
   final TextEditingController _reviewTextController = TextEditingController();
   final TextEditingController _ratingController = TextEditingController();
 
-  File? _selectedImage;
+  XFile? _selectedImage;
+  String? _uploadedImageUrl; // Menyimpan URL gambar setelah upload
 
   /// Fungsi untuk pilih foto dari gallery
   Future<void> _pickImage() async {
@@ -32,7 +33,8 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
         await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (pickedFile != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImage = pickedFile;
+        _uploadedImageUrl = null; // Reset URL gambar yang diupload sebelumnya
       });
     }
   }
@@ -77,13 +79,19 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
       );
 
       if (response.statusCode == 200) {
-        // Asumsikan Django membalas {"status": "success"} jika sukses
+        // Asumsikan Django membalas {"status": "success", "review_image_url": "<url>"}
         final jsonResp = jsonDecode(response.body);
         if (jsonResp["status"] == "success") {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Review created successfully!")),
           );
-          Navigator.pop(context);
+          if (jsonResp["review_image_url"] != null) {
+            setState(() {
+              _uploadedImageUrl = jsonResp["review_image_url"];
+              _selectedImage = null; // Reset gambar lokal setelah upload
+            });
+          }
+          Navigator.pop(context, true); // Mengembalikan nilai true untuk refresh
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error: ${jsonResp["status"]}")),
@@ -143,6 +151,10 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                   if (val == null || val.isEmpty) {
                     return "Rating is required";
                   }
+                  final rating = double.tryParse(val);
+                  if (rating == null || rating < 1 || rating > 5) {
+                    return "Rating must be between 1 and 5";
+                  }
                   return null;
                 },
               ),
@@ -157,9 +169,17 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                   ),
-                  child: _selectedImage == null
-                      ? const Center(child: Text("Tap to pick an image (optional)"))
-                      : Image.file(_selectedImage!, fit: BoxFit.cover),
+                  child: _uploadedImageUrl != null
+                      ? Image.network(
+                          _uploadedImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(child: Text("Failed to load image"));
+                          },
+                        )
+                      : (_selectedImage != null
+                          ? const Center(child: Text("Image will be displayed after upload"))
+                          : const Center(child: Text("Tap to pick an image (optional)"))),
                 ),
               ),
               const SizedBox(height: 24),

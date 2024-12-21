@@ -1,180 +1,198 @@
-// review_form.dart
-
-// ignore_for_file: depend_on_referenced_packages, use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+// import 'dart:io'; // Hapus import ini
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
-import 'package:southfeast_mobile/review/screens/review.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ReviewFormPage extends StatefulWidget {
-  final int menuItemId; // ID menu item yang direview
+  final int menuItemId;
 
-  const ReviewFormPage({super.key, required this.menuItemId});
+  const ReviewFormPage({
+    super.key,
+    required this.menuItemId,
+  });
 
   @override
   State<ReviewFormPage> createState() => _ReviewFormPageState();
 }
 
 class _ReviewFormPageState extends State<ReviewFormPage> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _reviewTextController = TextEditingController();
+  final TextEditingController _ratingController = TextEditingController();
 
-  // Fields for the form
-  double _rating = 3.0;
-  String _reviewText = '';
-  String? _imageUrl; // Field untuk URL gambar opsional
+  XFile? _selectedImage;
+  String? _uploadedImageUrl; // Menyimpan URL gambar setelah upload
 
-  bool _isLoading = false;
+  /// Fungsi untuk pilih foto dari gallery
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final XFile? pickedFile = 
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = pickedFile;
+        _uploadedImageUrl = null; // Reset URL gambar yang diupload sebelumnya
+      });
+    }
+  }
 
-  // URL backend untuk membuat review
-  final String _backendUrl = 'https://southfeast-production.up.railway.app/review/create-flutter/';
+  /// Fungsi untuk submit data ke Django via base64
+  Future<void> _submitReview() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final reviewText = _reviewTextController.text.trim();
+    final rating = _ratingController.text.trim();
+
+    // Ubah gambar ke base64 jika ada
+    String? base64Image;
+    if (_selectedImage != null) {
+      final bytes = await _selectedImage!.readAsBytes();
+      base64Image = base64Encode(bytes);
+    }
+
+    // Payload JSON
+    final Map<String, dynamic> requestBody = {
+      "menu_item_id": widget.menuItemId,
+      "review_text": reviewText,
+      "rating": rating,
+      "image": base64Image, // null jika tidak ada gambar
+    };
+
+    try {
+      // Ganti URL ini dengan endpoint Django Anda
+      final url = Uri.parse('https://southfeast-production.up.railway.app/review/createreview/');
+
+      // Kirim body JSON (bukan multipart)
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          // Jika butuh auth token, tambahkan di sini:
+          // "Authorization": "Bearer <token>"
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        // Asumsikan Django membalas {"status": "success", "review_image_url": "<url>"}
+        final jsonResp = jsonDecode(response.body);
+        if (jsonResp["status"] == "success") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Review created successfully!")),
+          );
+          if (jsonResp["review_image_url"] != null) {
+            setState(() {
+              _uploadedImageUrl = jsonResp["review_image_url"];
+              _selectedImage = null; // Reset gambar lokal setelah upload
+            });
+          }
+          Navigator.pop(context, true); // Mengembalikan nilai true untuk refresh
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: ${jsonResp["status"]}")),
+          );
+        }
+      } else {
+        // Jika bukan 200, misal 401 atau error lain
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Unknown error: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Exception: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Write Your Review'),
+        title: const Text("Add Review"),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Write Your Review
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Write Your Review',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 5,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your review';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) {
-                          _reviewText = value!;
-                        },
-                      ),
-                      const SizedBox(height: 16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // Review Text
+              TextFormField(
+                controller: _reviewTextController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: "Review Text",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Review text is required";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                      // Rating Slider
-                      Text(
-                        'Rating: ${_rating.toStringAsFixed(1)}',
-                        style: const TextStyle(fontSize: 16.0),
-                      ),
-                      Slider(
-                        value: _rating,
-                        min: 1.0,
-                        max: 5.0,
-                        divisions: 8, // Membagi slider menjadi 8 langkah (1.0, 1.5, ..., 5.0)
-                        label: _rating.toStringAsFixed(1),
-                        onChanged: (double value) {
-                          setState(() {
-                            _rating = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 24.0),
+              // Rating
+              TextFormField(
+                controller: _ratingController,
+                decoration: const InputDecoration(
+                  labelText: "Rating (1-5)",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Rating is required";
+                  }
+                  final rating = double.tryParse(val);
+                  if (rating == null || rating < 1 || rating > 5) {
+                    return "Rating must be between 1 and 5";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                      // Image URL Field (optional)
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Image URL (Optional)',
-                          border: OutlineInputBorder(),
-                        ),
-                        onSaved: (value) {
-                          _imageUrl = value;
-                        },
-                      ),
-                      const SizedBox(height: 16.0),
-
-                      // Submit Button
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: _submitForm,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            minimumSize: const Size(double.infinity, 50),
-                          ),
-                          child: const Text('SUBMIT'),
-                        ),
-                      ),
-                    ],
+              // Image Picker
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: double.infinity,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
                   ),
+                  child: _uploadedImageUrl != null
+                      ? Image.network(
+                          _uploadedImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(child: Text("Failed to load image"));
+                          },
+                        )
+                      : (_selectedImage != null
+                          ? const Center(child: Text("Image will be displayed after upload"))
+                          : const Center(child: Text("Tap to pick an image (optional)"))),
                 ),
               ),
-            ),
+              const SizedBox(height: 24),
+
+              // Submit Button
+              ElevatedButton(
+                onPressed: _submitReview,
+                child: const Text("Submit Review"),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-  }
-
-  // Submit the form
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    _formKey.currentState!.save();
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Membuat payload data review
-      final Map<String, dynamic> reviewData = {
-        'menu_item': widget.menuItemId,
-        'rating': _rating,
-        'review_text': _reviewText,
-        'image_url': _imageUrl, // Sertakan URL gambar jika diisi
-      };
-
-      final response = await http.post(
-        Uri.parse(_backendUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          // Tambahkan header autentikasi jika diperlukan
-        },
-        body: json.encode(reviewData),
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Review submitted successfully')),
-        );
-        _formKey.currentState!.reset();
-        setState(() {
-          _rating = 3.0;
-          _imageUrl = null;
-        });
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ReviewPage()),
-        ); // Kembali ke halaman review setelah sukses
-      } else {
-        // Debugging: tampilkan respons error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit review: ${response.body}')),
-        );
-      }
-    } catch (e) {
-      // Handle error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 }

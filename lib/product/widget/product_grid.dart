@@ -59,7 +59,7 @@ class ProductGrid extends StatelessWidget {
                       builder: (context) => DetailMakanan(
                         result: product,
                         isStaff: false,
-                        isAuthenticated: false,
+                        isAuthenticated: request.loggedIn, // Update this line to use request.loggedIn
                       ),
                     ),
                   );

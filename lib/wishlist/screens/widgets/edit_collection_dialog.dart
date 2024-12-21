@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import '../../models/wishlist_collection.dart';
+import 'package:southfeast_mobile/wishlist/models/wishlist_collection.dart';
+// import '../../models/wishlist_collection.dart';
 
 class EditCollectionDialog extends StatefulWidget {
   final Result collection;
@@ -20,7 +21,7 @@ class _EditCollectionDialogState extends State<EditCollectionDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
-  final String baseUrl = 'http://10.0.2.2:8000/wishlist';
+  final String baseUrl = 'https://southfeast-production.up.railway.app/wishlist/json';
 
   @override
   void initState() {

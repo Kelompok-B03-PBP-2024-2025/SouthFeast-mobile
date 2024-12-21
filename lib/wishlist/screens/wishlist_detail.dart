@@ -1,9 +1,9 @@
 // lib/screens/wishlist_detail.dart
 import 'package:flutter/material.dart';
+import 'package:southfeast_mobile/wishlist/screens/widgets/edit_collection_dialog.dart';
 import '../models/wishlist_collection.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'widgets/edit_collection_dialog.dart';
 
 class WishlistDetailPage extends StatefulWidget {
   final Result collection;
@@ -18,7 +18,7 @@ class WishlistDetailPage extends StatefulWidget {
 }
 
 class _WishlistDetailPageState extends State<WishlistDetailPage> {
-  final String baseUrl = 'http://10.0.2.2:8000/wishlist'; // NANTI INI HARUS DIGANTI
+  final String baseUrl = 'https://southfeast-production.up.railway.app/wishlist/json';
 
   Future<void> removeItem(int itemId) async {
     final request = context.read<CookieRequest>();
@@ -44,6 +44,8 @@ class _WishlistDetailPageState extends State<WishlistDetailPage> {
       }
     }
   }
+
+  
 
   void showEditDialog() {
     showDialog(

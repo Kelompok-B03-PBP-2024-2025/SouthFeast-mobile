@@ -12,7 +12,7 @@ class FilterBottomSheet extends StatefulWidget {
   final VoidCallback onApplyFilters;
 
   const FilterBottomSheet({
-    Key? key,
+    super.key,
     required this.minPriceController,
     required this.maxPriceController,
     required this.categories,
@@ -22,7 +22,7 @@ class FilterBottomSheet extends StatefulWidget {
     required this.selectedKecamatan,
     required this.onKecamatanSelected,
     required this.onApplyFilters,
-  }) : super(key: key);
+  });
 
   @override
   State<FilterBottomSheet> createState() => _FilterBottomSheetState();

@@ -1,171 +1,107 @@
-// lib/screens/widgets/collection_card.dart
-import 'package:flutter/material.dart';
-import '../../models/wishlist_collection.dart';
+// import 'package:flutter/material.dart';
 
-class CollectionCard extends StatelessWidget {
-  final Result collection;
-  final VoidCallback? onDelete;
-  final Function(int)? onRemoveItem;
+// class CollectionCard extends StatelessWidget {
+//   final Map<String, dynamic> item;
+//   final VoidCallback onRemove;
+//   final Function(int) onMove;
 
-  const CollectionCard({
-    super.key,
-    required this.collection,
-    this.onDelete,
-    this.onRemoveItem,
-  });
+//   const CollectionCard({
+//     super.key,
+//     required this.item,
+//     required this.onRemove,
+//     required this.onMove,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 2,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Preview Grid
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12)
-                ),
-              ),
-              child: collection.items.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No items yet',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
-                  : GridView.count(
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(8),
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
-                      children: collection.items
-                          .take(4)
-                          .map((item) => Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.all(4),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          item.menuItem.name,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontSize: 12),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          item.menuItem.price,
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (onRemoveItem != null)
-                                    Positioned(
-                                      top: 0,
-                                      right: 0,
-                                      child: IconButton(
-                                        icon: const Icon(Icons.close, size: 16),
-                                        onPressed: () => onRemoveItem!(item.id),
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                ],
-                              ))
-                          .toList(),
-                    ),
-            ),
-          ),
-          
-          // Collection Info
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        collection.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (!collection.isDefault && onDelete != null)
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: onDelete,
-                        color: Colors.red[400],
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                if (collection.isDefault)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.yellow[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Default',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 4),
-                Text(
-                  collection.description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${collection.itemsCount} items',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     final menuItem = item['menu_item'];
+//     final imageUrl = menuItem['image'] ?? '';
+//     final name = menuItem['name'] ?? 'No Name';
+//     final price = menuItem['price'] ?? 'Unknown Price';
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Item Details'),
+//       ),
+//       body: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             if (imageUrl.isNotEmpty)
+//               Center(
+//                 child: Image.network(
+//                   imageUrl,
+//                   width: 200,
+//                   height: 200,
+//                   errorBuilder: (context, error, stackTrace) {
+//                     return const Icon(Icons.error, size: 100);
+//                   },
+//                 ),
+//               ),
+//             const SizedBox(height: 16),
+//             Text(
+//               name,
+//               style: const TextStyle(
+//                 fontSize: 24,
+//                 fontWeight: FontWeight.bold,
+//               ),
+//             ),
+//             const SizedBox(height: 8),
+//             Text(
+//               'Price: $price',
+//               style: const TextStyle(fontSize: 18),
+//             ),
+//             const Spacer(),
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceAround,
+//               children: [
+//                 ElevatedButton.icon(
+//                   icon: const Icon(Icons.delete),
+//                   label: const Text('Remove'),
+//                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+//                   onPressed: onRemove,
+//                 ),
+//                 ElevatedButton.icon(
+//                   icon: const Icon(Icons.drive_file_move),
+//                   label: const Text('Move'),
+//                   onPressed: () => showMoveDialog(context),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   void showMoveDialog(BuildContext context) {
+//     showDialog(
+//       context: context,
+//       builder: (_) => AlertDialog(
+//         title: const Text('Move Item'),
+//         content: Column(
+//           mainAxisSize: MainAxisSize.min,
+//           children: const [
+//             Text('Choose a collection to move this item to:'),
+//           ],
+//         ),
+//         actions: [
+//           TextButton(
+//             onPressed: () => Navigator.pop(context),
+//             child: const Text('Cancel'),
+//           ),
+//           ElevatedButton(
+//             onPressed: () {
+//               // Assume targetCollectionId is fetched from a dropdown or input
+//               final targetCollectionId = 1; // Replace with actual value
+//               Navigator.pop(context);
+//               onMove(targetCollectionId);
+//             },
+//             child: const Text('Move'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

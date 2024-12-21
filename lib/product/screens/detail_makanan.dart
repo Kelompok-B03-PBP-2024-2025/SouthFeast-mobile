@@ -20,7 +20,7 @@ class DetailMakanan extends StatefulWidget {
 
   const DetailMakanan({
     Key? key, 
-    required this.result,
+    required this.result, required bool isStaff, required bool isAuthenticated,
   }) : super(key: key);
 
   @override

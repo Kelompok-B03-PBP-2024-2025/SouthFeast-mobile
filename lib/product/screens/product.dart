@@ -3,11 +3,9 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:southfeast_mobile/dashboard/models/product/product.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
-import 'package:southfeast_mobile/dashboard/widgets/restaurant_grid.dart';
-import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
 import 'package:southfeast_mobile/product/widget/filter_bottom_sheet.dart';
 import 'package:southfeast_mobile/product/widget/product_grid.dart';
-import 'package:southfeast_mobile/restaurant/widget/restaurant_grid.dart';
+import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
 
 class ProductPage extends StatefulWidget {
   const ProductPage({super.key});
@@ -25,7 +23,6 @@ class _ProductPageState extends State<ProductPage> {
   List<Result> _products = [];
   bool _hasNext = false;
   bool _isLoading = false;
-  bool _showRestaurants = false;
   Set<int> _wishlistedProducts = {};
   final ScrollController _scrollController = ScrollController();
 
@@ -135,8 +132,6 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    final request = context.watch<CookieRequest>();
-
     return Scaffold(
       body: Column(
         children: [
@@ -192,39 +187,21 @@ class _ProductPageState extends State<ProductPage> {
               _applyFilters();
             },
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _showRestaurants = !_showRestaurants;
-                });
-              },
-              child: Row(
-                children: [
-                  Icon(_showRestaurants ? Icons.shopping_cart : Icons.restaurant, size: 20),
-                  const SizedBox(width: 8),
-                ],
-              ),
-            ),
-          ),
           Expanded(
-            child: _showRestaurants
-                ? RestaurantGrid()
-                : (_products.isEmpty && !_isLoading
-                    ? const Center(child: Text('No products found'))
-                    : ProductGrid(
-                        products: _products,
-                        scrollController: _scrollController,
-                        isLoading: _isLoading,
-                        onUpdate: () {
-                          _currentPage = 1;
-                          fetchProducts(request, page: 1);
-                        },
-                        isAdmin: false,
-                        wishlistedProducts: _wishlistedProducts,
-                        onWishlistToggle: _toggleWishlist,
-                      )),
+            child: _products.isEmpty && !_isLoading
+                ? const Center(child: Text('No products found'))
+                : ProductGrid(
+                    products: _products,
+                    scrollController: _scrollController,
+                    isLoading: _isLoading,
+                    onUpdate: () {
+                      _currentPage = 1;
+                      fetchProducts(context.read<CookieRequest>(), page: 1);
+                    },
+                    isAdmin: false,
+                    wishlistedProducts: _wishlistedProducts,
+                    onWishlistToggle: _toggleWishlist,
+                  ),
           ),
         ],
       ),

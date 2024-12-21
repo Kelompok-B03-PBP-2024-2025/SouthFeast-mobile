@@ -81,7 +81,7 @@ class RestaurantElement {
         menuCount: json["menu_count"],
         minPrice: json["min_price"],
         maxPrice: json["max_price"],
-        avgPrice: json["avg_price"],
+        avgPrice: double.parse(json["avg_price"].toString()).toStringAsFixed(2),
         image: json["image"],
         menus: List<Menu>.from(json["menus"].map((x) => Menu.fromJson(x))),
     );
@@ -105,12 +105,16 @@ class Menu {
     String name;
     String price;
     String image;
+    String category;
+    String description;
 
     Menu({
         required this.id,
         required this.name,
         required this.price,
         required this.image,
+        required this.category,
+        required this.description,
     });
 
     factory Menu.fromJson(Map<String, dynamic> json) => Menu(
@@ -118,6 +122,8 @@ class Menu {
         name: json["name"],
         price: json["price"],
         image: json["image"],
+        category: json["category"],
+        description: json["description"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -125,5 +131,7 @@ class Menu {
         "name": name,
         "price": price,
         "image": image,
+        "category": category,
+        "description": description,
     };
 }

@@ -10,7 +10,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
     super.key,
     required this.menuItems,
     required this.selectedIndex,
-    required this.onTap,
+    required this.onTap, required bool isAuthenticated, required Null Function(dynamic context, dynamic item) onAuthCheck,
   });
 
   @override

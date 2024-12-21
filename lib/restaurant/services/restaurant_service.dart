@@ -11,7 +11,7 @@ class RestaurantService {
   }) async {
     try {
       final response = await request.get(
-          'http://127.0.0.1:8000/restaurant/show-json-restaurant/?page=$page'
+          'https://southfeast-production.up.railway.app/restaurant/show-json-restaurant/?page=$page'
           '${kecamatan != null && kecamatan != 'all' ? '&kecamatan=$kecamatan' : ''}'
           '${search != null && search.isNotEmpty ? '&search=$search' : ''}');
 
@@ -40,7 +40,7 @@ class RestaurantService {
   ) async {
     try {
       final response = await request.get(
-        'http://127.0.0.1:8000/restaurant/get-restaurant/$restaurantId/',
+        'https://southfeast-production.up.railway.app/restaurant/get-restaurant/$restaurantId/',
       );
 
       if (response != null) {

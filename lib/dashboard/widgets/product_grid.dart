@@ -47,7 +47,7 @@ class ProductGrid extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => DetailMakanan(
                         result: product,
-                        onUpdate: onUpdate,  // Tambahkan onUpdate
+                        onUpdate: onUpdate, isStaff: true, isAuthenticated: true,  // Tambahkan onUpdate
                       ),
                     ),
                   );

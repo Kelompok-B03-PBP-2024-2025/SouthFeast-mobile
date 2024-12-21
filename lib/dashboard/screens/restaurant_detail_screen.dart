@@ -203,28 +203,28 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                                   CustomSlidableAction(
                                     flex: 1,
                                     onPressed: (_) => _handleEdit(menuItem),
-                                    backgroundColor: Colors.blue.shade400,
+                                    backgroundColor: const Color.fromARGB(255, 0, 32, 70),
                                     foregroundColor: Colors.white,
                                     child: const Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(Icons.edit),
                                         SizedBox(height: 4),
-                                        Text('Edit', style: TextStyle(fontSize: 12)),
+          
                                       ],
                                     ),
                                   ),
                                   CustomSlidableAction(
                                     flex: 1,
                                     onPressed: (_) => _handleDelete(menuItem),
-                                    backgroundColor: Colors.red.shade400,
+                                    backgroundColor: const Color.fromARGB(255, 97, 2, 0),
                                     foregroundColor: Colors.white,
                                     child: const Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(Icons.delete),
                                         SizedBox(height: 4),
-                                        Text('Delete', style: TextStyle(fontSize: 12)),
+                                        
                                       ],
                                     ),
                                   ),
@@ -332,7 +332,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                                               style: TextStyle(
                                                 fontSize: fontSize - 2,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.green,
+                                                color: Colors.black,
                                               ),
                                             ),
                                             const SizedBox(height: 4),

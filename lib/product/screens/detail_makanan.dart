@@ -42,7 +42,7 @@ class _DetailMakananState extends State<DetailMakanan> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ReviewFormPage(menuItemId: currentResult.id ?? 0),
+        builder: (context) => ReviewFormPage(menuItemId: currentResult.id),
       ),
     );
   }

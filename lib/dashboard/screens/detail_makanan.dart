@@ -224,7 +224,7 @@ class _DetailMakananState extends State<DetailMakanan> {
                             label: const Text('Edit'),
                             onPressed: () => _handleEdit(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: const Color.fromARGB(255, 0, 32, 70),
                               foregroundColor: Colors.white,
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
@@ -236,7 +236,7 @@ class _DetailMakananState extends State<DetailMakanan> {
                             label: const Text('Delete'),
                             onPressed: () => _handleDelete(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: const Color.fromARGB(255, 97, 2, 0),
                               foregroundColor: Colors.white,
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),

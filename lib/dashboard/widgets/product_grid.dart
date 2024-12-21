@@ -88,14 +88,14 @@ class ProductGrid extends StatelessWidget {
                               onUpdate!();
                             }
                           },
-                          backgroundColor: Colors.blue.shade400,
+                          backgroundColor: const Color.fromARGB(255, 0, 32, 70),
                           foregroundColor: Colors.white,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: const [
                               Icon(Icons.edit),
                               SizedBox(height: 4),
-                              Text('Edit', style: TextStyle(fontSize: 12)),
+                              
                             ],
                           ),
                         ),
@@ -155,14 +155,14 @@ class ProductGrid extends StatelessWidget {
                               }
                             }
                           },
-                          backgroundColor: Colors.red.shade400,
+                          backgroundColor: const Color.fromARGB(255, 97, 2, 0),
                           foregroundColor: Colors.white,
                           child: const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.delete),
                               SizedBox(height: 4),
-                              Text('Delete', style: TextStyle(fontSize: 12)),
+                              
                             ],
                           ),
                         ),
@@ -265,7 +265,7 @@ class ProductGrid extends StatelessWidget {
                                     children: [
                                       Icon(Icons.restaurant,
                                           size: fontSize,
-                                          color: Colors.blue.shade700),
+                                          color: const Color.fromARGB(255, 0, 32, 70)),
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: InkWell(
@@ -300,7 +300,7 @@ class ProductGrid extends StatelessWidget {
                                           child: Text(
                                             product.restaurantName ?? 'N/A',
                                             style: TextStyle(
-                                              color: Colors.blue.shade700,
+                                              color: const Color.fromARGB(255, 0, 32, 70),
                                               fontSize: fontSize - 2,
                                               decoration:
                                                   TextDecoration.underline,

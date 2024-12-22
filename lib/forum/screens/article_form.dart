@@ -60,10 +60,15 @@ class _ArticleFormPageState extends State<ArticleFormPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Article saved successfully')),
         );
-        Navigator.pop(context);
+        // Kembalikan data yang lebih lengkap
+        Navigator.pop(context, {
+          'title': _titleController.text,
+          'content': _contentController.text,
+          'success': true,
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save article: ${response['message']}')),
+          SnackBar(content: Text('Error: ${response['message']}')),
         );
       }
     } catch (e) {

@@ -117,7 +117,7 @@ class _QnaListPageState extends State<QnaListPage> {
                     'Public QnA',
                     style: TextStyle(
                       color: selectedTab == 'Public QnA'
-                          ? const Color(0xFF3B5FFF)
+                          ? const Color.fromARGB(255, 13, 72, 119)
                           : Colors.grey,
                       fontSize: 16,
                       fontWeight: selectedTab == 'Public QnA'
@@ -133,7 +133,7 @@ class _QnaListPageState extends State<QnaListPage> {
                     'Your QnA',
                     style: TextStyle(
                       color: selectedTab == 'Your QnA'
-                          ? const Color(0xFF3B5FFF)
+                          ? const Color.fromARGB(255, 13, 72, 119)
                           : Colors.grey,
                       fontSize: 16,
                       fontWeight: selectedTab == 'Your QnA'
@@ -222,7 +222,7 @@ class _QnaListPageState extends State<QnaListPage> {
               ),
             );
 
-            if (result != null && mounted) {
+            if (result != null) {
               if (result['deleted'] == true) {
                 setState(() {
                   questions.removeWhere((q) => q.pk == result['questionId']);
@@ -237,25 +237,7 @@ class _QnaListPageState extends State<QnaListPage> {
               }
             }
           },
-            // onTap: () async {
-            //   final result = await Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //       builder: (context) => QuestionDetailPage(question: question),
-            //     ),
-            //   );
-
-            //   if (result != null && result is Map && result['deleted'] == true) {
-            //     // First update state immediately for better UX
-            //     setState(() {
-            //       questions.removeWhere((q) => q.pk == result['questionId']);
-            //     });
-                
-            //     // Then refresh from API to ensure consistency
-            //     fetchQuestions();
-            //   }
-            // }
-          );
+        );
         },
       ),
     );

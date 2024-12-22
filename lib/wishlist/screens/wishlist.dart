@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:southfeast_mobile/wishlist/screens/widgets/edit_collection_page.dart';
 import 'package:southfeast_mobile/wishlist/screens/wishlist_details.dart';
 import '../models/wishlist_collection.dart';
-import 'wishlist_details.dart'; 
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -27,8 +26,17 @@ class _WishlistPageState extends State<WishlistPage> {
       final url = '$baseUrl/flutter/collections/';
       final response = await request.get(url);
 
+      // Jika response kosong atau null, tambahkan koleksi default
       if (response == null || response.isEmpty) {
-        throw Exception('Empty response from server');
+        return [
+          WishlistCollection(
+            id: 0, 
+            name: 'My Wishlist', 
+            description: 'Your first wishlist collection',
+            items: [],
+            isDefault: true
+          )
+        ];
       }
 
       return List<WishlistCollection>.from(

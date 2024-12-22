@@ -70,33 +70,39 @@ class _LoginPageState extends State<LoginPage> {
                   // Username
                   TextField(
                     controller: _usernameController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Username',
                       hintText: 'Enter your username',
-                      border: OutlineInputBorder(
+                      border: InputBorder.none, // Hapus border default
+                      enabledBorder: InputBorder.none, // Tidak ada border saat normal
+                      focusedBorder: OutlineInputBorder( // Border hanya muncul saat fokus
                         borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                        borderSide: BorderSide(color: Colors.black, width: 2),
                       ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                      filled: true, // Tambahkan background
+                      fillColor: Colors.grey.shade200, // Warna background abu-abu muda
                     ),
                   ),
-                  const SizedBox(height: 12.0),
 
                   // Password
                   TextField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Password',
                       hintText: 'Enter your password',
-                      border: OutlineInputBorder(
+                      border: InputBorder.none, // Hapus border default
+                      enabledBorder: InputBorder.none, // Tidak ada border saat normal
+                      focusedBorder: OutlineInputBorder( // Border hanya muncul saat fokus
                         borderRadius: BorderRadius.all(Radius.circular(12.0)),
+                        borderSide: BorderSide(color: Colors.black, width: 2),
                       ),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                      filled: true, // Tambahkan background
+                      fillColor: Colors.grey.shade200, // Warna background abu-abu muda
                     ),
                     obscureText: true,
                   ),
-                  const SizedBox(height: 24.0),
 
                   // Button Login
                   ElevatedButton(

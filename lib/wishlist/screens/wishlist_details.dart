@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
-// import 'package:southfeast_mobile/dashboard/screen/product_detail.dart';
-import 'package:southfeast_mobile/product/screens/detail_makanan.dart'; // Added import for DetailMakanan
+import 'package:southfeast_mobile/product/screens/detail_makanan.dart'; 
 
 class CollectionDetailPage extends StatefulWidget {
   final int collectionId;
@@ -360,7 +359,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                   child: Text('No data found.'),
                 ),
               );
-            }
+            } 
 
             final data = snapshot.data!;
             final isDefault = data['is_default'] ?? false;

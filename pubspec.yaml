@@ -46,6 +46,8 @@ dependencies:
   iconly: ^1.0.1
   flutter_flip_card: ^0.0.6
   intl: ^0.20.1
+  http: ^1.2.2
+  http_parser: ^4.0.0
 
 dev_dependencies:
   flutter_test:

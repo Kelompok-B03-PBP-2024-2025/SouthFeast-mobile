@@ -8,7 +8,7 @@
 
 ristek.link/punyasouthfeast
 
-https://install.appcenter.ms/orgs/Kelompok-B03-PBP-2024-2025/apps/SouthFeast
+[https://install.appcenter.ms/orgs/Kelompok-B03-PBP-2024-2025/apps/SouthFeast](https://install.appcenter.ms/orgs/Kelompok-B03-PBP-2024-2025/apps/southfeast/distribution_groups/public)
 
 ## Anggota Kelompok B03
 - [Gnade Yuka](https://github.com/yukaagnd) - 2306165704

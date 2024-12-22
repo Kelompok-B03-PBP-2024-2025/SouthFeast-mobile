@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:southfeast_mobile/dashboard/models/product/result.dart';
+// import 'package:southfeast_mobile/dashboard/screen/product_detail.dart';
+import 'package:southfeast_mobile/product/screens/detail_makanan.dart'; // Added import for DetailMakanan
 
 class CollectionDetailPage extends StatefulWidget {
   final int collectionId;
@@ -172,7 +175,6 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
     );
   }
 
-
   void showEditCollectionDialog(String currentName, String currentDescription) {
     final nameController = TextEditingController(text: currentName);
     final descController = TextEditingController(text: currentDescription);
@@ -287,6 +289,22 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
     );
   }
 
+  // Add this method to convert MenuItem to Result
+  Result _convertMenuItemToResult(Map<String, dynamic> menuItem) {
+    return Result(
+      id: menuItem['id'],
+      name: menuItem['name'],
+      price: menuItem['price'],
+      image: menuItem['image'],
+      // Set other fields with default values or data from your API
+      category: '',  // Set default or get from API
+      kecamatan: '', // Set default or get from API
+      restaurantName: '', // Set default or get from API
+      description: '', // Set default or get from API
+      location: '', // Set default or get from API
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -380,25 +398,20 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                             : const Icon(Icons.image_not_supported),
                         title: Text(item['menu_item']['name'] ?? 'No name'),
                         subtitle: Text('Price: ${item['menu_item']['price']}'),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) async {
-                            if (value == 'remove') {
-                              await removeItemFromCollection(item['id']);
-                            } else if (value == 'move') {
-                              showMoveDialog(item['id'], item['menu_item']['name']);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'move',
-                              child: Text('Move'),
+                        onTap: () {
+                          // Convert menu item to Result and navigate
+                          final result = _convertMenuItemToResult(item['menu_item']);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailMakanan(
+                                result: result,
+                                isAuthenticated: true, // Since user is already authenticated
+                                isStaff: false, // Set based on your user role logic
+                              ),
                             ),
-                            const PopupMenuItem(
-                              value: 'remove',
-                              child: Text('Remove'),
-                            ),
-                          ],
-                        ),
+                          ); // Closed the missing parenthesis
+                        },
                       ),
                     ),
                   ],
@@ -410,5 +423,4 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
       ),
     );
   }
-
 }

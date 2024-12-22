@@ -14,13 +14,6 @@ import 'package:southfeast_mobile/dashboard/models/product/result.dart';
 import 'package:southfeast_mobile/product/screens/detail_makanan.dart';
 import 'package:southfeast_mobile/product/screens/product.dart';
 
-class DummyArticle {
-  final String image;
-  final String title;
-  final String content;
-  DummyArticle({required this.image, required this.title, required this.content});
-}
-
 class DummyRestaurant {
   final String image;
   final String name;
@@ -50,24 +43,6 @@ class _MyHomePageState extends State<MyHomePage> {
     'https://manual.co.id/wp-content/uploads/2024/04/1317_solo_ristorante_web-980x719.jpg',
     'https://manual.co.id/wp-content/uploads/2024/06/nothing-personal_57-980x719.jpg',
     'https://manual.co.id/wp-content/uploads/2024/05/Sando-Shop_29-980x719.jpg',
-  ];
-
-  final List<DummyArticle> articles = [
-    DummyArticle(
-      image: 'https://manual.co.id/wp-content/uploads/2023/12/scarlett_461-980x719.jpg',
-      title: 'Best Restaurants in South Jakarta',
-      content: 'Discover the hidden gems of South Jakarta\'s culinary scene...',
-    ),
-    DummyArticle(
-      image: 'https://manual.co.id/wp-content/uploads/2020/01/LawlessMenteng_Di-4-980x719.jpg',
-      title: 'Street Food Guide',
-      content: 'Exploring the vibrant street food culture of Jakarta...',
-    ),
-    DummyArticle(
-      image: 'https://manual.co.id/wp-content/uploads/2024/05/Sando-Shop_29-980x719.jpg',
-      title: 'Coffee Shop Reviews',
-      content: 'The best coffee shops in South Jakarta for your caffeine fix...',
-    ),
   ];
 
   final List<DummyRestaurant> restaurants = [
@@ -234,92 +209,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ],
-            ),
-
-            // Articles Section
-            Container(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  const Text(
-                    "Explore South Jakarta's Culinary Delights",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Discover the hidden gems and popular spots that make South Jakarta a food paradise.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 32),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: articles.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            if (isSmallScreen) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                      topRight: Radius.circular(8),
-                                    ),
-                                    child: Image.network(
-                                      articles[index].image,
-                                      width: double.infinity,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: _buildArticleContent(articles[index]),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                      bottomLeft: Radius.circular(8),
-                                    ),
-                                    child: Image.network(
-                                      articles[index].image,
-                                      width: 150,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: _buildArticleContent(articles[index]),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
             ),
 
             // Restaurants Section
@@ -798,39 +687,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildArticleContent(DummyArticle article) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Food and Beverage',
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          article.title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          article.content,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white70,
-          ),
-        ),
-      ],
     );
   }
 }

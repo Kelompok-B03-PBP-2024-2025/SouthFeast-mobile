@@ -4,6 +4,7 @@
 # South Jakarta Flavors, SouthFeasts Delivers! 🍜🍖
 
 [https://southfeast-production.up.railway.app](https://southfeast-production.up.railway.app)
+ristek.link/punyasouthfeast
 
 ## Anggota Kelompok B03
 - [Gnade Yuka](https://github.com/yukaagnd) - 2306165704

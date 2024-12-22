@@ -1,3 +1,4 @@
+https://build.appcenter.ms/v0.1/apps/2a5f4762-0278-48a4-a0fc-9ca86e798a88/branches/main/badge
 # SouthFeasts
 
 # South Jakarta Flavors, SouthFeasts Delivers! 🍜🍖

@@ -1,10 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-// import 'dart:io'; // Hapus import ini
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class ReviewFormPage extends StatefulWidget {
   final int menuItemId;
@@ -55,52 +55,35 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
       base64Image = base64Encode(bytes);
     }
 
-    // Payload JSON
-    final Map<String, dynamic> requestBody = {
-      "menu_item_id": widget.menuItemId,
-      "review_text": reviewText,
-      "rating": rating,
-      "image": base64Image, // null jika tidak ada gambar
-    };
+    // Get the request instance
+    final request = context.read<CookieRequest>();
 
     try {
-      // Ganti URL ini dengan endpoint Django Anda
-      final url = Uri.parse('https://southfeast-production.up.railway.app/review/createreview/');
-
-      // Kirim body JSON (bukan multipart)
-      final response = await http.post(
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          // Jika butuh auth token, tambahkan di sini:
-          // "Authorization": "Bearer <token>"
-        },
-        body: jsonEncode(requestBody),
+      // Kirim request menggunakan pbp_django_auth
+      final response = await request.postJson(
+        'https://southfeast-production.up.railway.app/review/createreview/',
+        jsonEncode({
+          "menu_item_id": widget.menuItemId,
+          "review_text": reviewText,
+          "rating": rating,
+          "image": base64Image, // null jika tidak ada gambar
+        }),
       );
 
-      if (response.statusCode == 200) {
-        // Asumsikan Django membalas {"status": "success", "review_image_url": "<url>"}
-        final jsonResp = jsonDecode(response.body);
-        if (jsonResp["status"] == "success") {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Review created successfully!")),
-          );
-          if (jsonResp["review_image_url"] != null) {
-            setState(() {
-              _uploadedImageUrl = jsonResp["review_image_url"];
-              _selectedImage = null; // Reset gambar lokal setelah upload
-            });
-          }
-          Navigator.pop(context, true); // Mengembalikan nilai true untuk refresh
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: ${jsonResp["status"]}")),
-          );
-        }
-      } else {
-        // Jika bukan 200, misal 401 atau error lain
+      if (response['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Unknown error: ${response.statusCode}")),
+          const SnackBar(content: Text("Review created successfully!")),
+        );
+        if (response['review_image_url'] != null) {
+          setState(() {
+            _uploadedImageUrl = response['review_image_url'];
+            _selectedImage = null;
+          });
+        }
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${response['status']}")),
         );
       }
     } catch (e) {

@@ -27,7 +27,7 @@ class DetailReviewPage extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(

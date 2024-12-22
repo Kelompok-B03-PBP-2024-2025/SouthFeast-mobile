@@ -37,6 +37,8 @@ class ReviewEntry {
         createdAt: DateTime.parse(json["created_at"]),
     );
 
+  get reviewImageUrl => null;
+
     Map<String, dynamic> toJson() => {
         "id": id,
         "menu_item": menuItem,

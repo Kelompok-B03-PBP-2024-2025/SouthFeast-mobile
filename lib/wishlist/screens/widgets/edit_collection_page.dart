@@ -81,16 +81,23 @@ class _EditCollectionPageState extends State<EditCollectionPage> {
   Future<void> _deleteCollection() async {
     final confirmDelete = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => 
+      AlertDialog(
         title: const Text('Delete Collection'),
         content: const Text('Are you sure you want to delete this collection? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black, // Tambahkan ini untuk warna teks hitam
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white, // Tambahkan ini untuk warna teks hitam
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
@@ -185,17 +192,20 @@ class _EditCollectionPageState extends State<EditCollectionPage> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton(
+                    child: 
+                    ElevatedButton(
                       onPressed: _isLoading ? null : _updateCollection,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
+                        foregroundColor: Colors.white, // Tambahkan ini untuk warna teks putih
                       ),
                       child: _isLoading
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
+                              child: 
+                              CircularProgressIndicator(
+                                color: Colors.black, 
                                 strokeWidth: 2,
                               ),
                             )

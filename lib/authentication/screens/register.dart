@@ -28,6 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
             Navigator.pop(context);
           },
         ),
+        backgroundColor: Colors.black,  // Matching the app bar color with black
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -50,6 +51,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   const SizedBox(height: 30.0),
+                  // Username field
                   TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
@@ -69,6 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                   const SizedBox(height: 12.0),
+                  // Password field
                   TextFormField(
                     controller: _passwordController,
                     decoration: const InputDecoration(
@@ -89,6 +92,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                   const SizedBox(height: 12.0),
+                  // Confirm password field
                   TextFormField(
                     controller: _confirmPasswordController,
                     decoration: const InputDecoration(
@@ -109,24 +113,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                   const SizedBox(height: 24.0),
+                  // Register button
                   ElevatedButton(
                     onPressed: () async {
                       String username = _usernameController.text;
                       String password1 = _passwordController.text;
                       String password2 = _confirmPasswordController.text;
 
-                      // Cek kredensial
-                      // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
-                      // Untuk menyambungkan Android emulator dengan Django pada localhost,
-                      // gunakan URL http://10.0.2.2/
-                      // final response = await request.postJson(
-                      //     "http://10.0.2.2:8000/auth/api/register/",
-                      //     jsonEncode({
-                      //       "username": username,
-                      //       "password1": password1,
-                      //       "password2": password2,
-                      //     }));
-
+                      // Registration API call
                       final response = await request.postJson(
                           "https://southfeast-production.up.railway.app/auth/api/register/",
                           jsonEncode({
@@ -157,8 +151,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 50),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: Colors.black,  // Black button color
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Register'),

@@ -1,26 +1,21 @@
-// lib/review/widget/review_card.dart
+// lib/widgets/review_card.dart
 
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/review/models/review_entry.dart';
 import 'package:southfeast_mobile/review/screens/detail_review.dart';
-import 'package:southfeast_mobile/review/screens/edit_review.dart'; // Pastikan Anda memiliki halaman EditReview
 
 class ReviewCard extends StatelessWidget {
   final ReviewEntry review;
   final bool isStaff;
-  final String? currentUsername; // Tambahkan ini
 
   const ReviewCard({
     super.key,
     required this.review,
     this.isStaff = false,
-    this.currentUsername, // Tambahkan ini
   });
 
   @override
   Widget build(BuildContext context) {
-    bool isAuthor = currentUsername != null && review.user == currentUsername;
-
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(
@@ -29,18 +24,23 @@ class ReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Gambar Default tanpa mengakses reviewImage
           Expanded(
-            child: Image.network(
-              'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.network(
-                  'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
+            child: (review.reviewImage != null)
+                ? Image.network(
+                    review.reviewImage!,
+                    fit: BoxFit.cover,
+                    // Jika gambar error, gunakan fallback
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.network(
+                        'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                : Image.network(
+                    'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
+                    fit: BoxFit.cover,
+                  ),
           ),
           // Konten
           Padding(
@@ -48,43 +48,17 @@ class ReviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Baris: user + rating + Edit button (jika author)
+                // Baris: user + rating
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Left side: Username dan tombol Edit (jika author)
-                    Row(
-                      children: [
-                        Text(
-                          review.user,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (isAuthor)
-                          GestureDetector(
-                            onTap: () {
-                              // Navigasi ke halaman Edit Review
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EditReviewPage(
-                                    review: review, // Ubah menjadi 'review: review'
-                                  ),
-                                ),
-                              );
-                            },
-                            child: const Icon(
-                              Icons.edit,
-                              color: Colors.blue,
-                              size: 20,
-                            ),
-                          ),
-                      ],
+                    Text(
+                      review.user,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                    // Right side: Rating
                     Text(
                       'Rating: ${review.rating}/5',
                       style: const TextStyle(

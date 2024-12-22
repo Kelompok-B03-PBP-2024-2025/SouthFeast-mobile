@@ -206,7 +206,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-
   flutter_slidable:
     dependency: "direct main"
     description:
@@ -215,7 +214,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
-
   flutter_test:
     dependency: "direct dev"
     description: flutter

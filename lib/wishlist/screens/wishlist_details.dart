@@ -160,10 +160,16 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Close dialog
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black, // Warna teks hitam
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Background hitam
+              foregroundColor: Colors.white, // Teks putih
+            ),
             onPressed: () async {
               Navigator.pop(context); // Close confirm dialog
               await deleteCollection(collectionId);
@@ -199,9 +205,16 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Close dialog
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black, // Warna teks hitam
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Background hitam
+              foregroundColor: Colors.white, // Teks putih
+            ),
             onPressed: () async {
               final newName = nameController.text.trim();
               final newDesc = descController.text.trim();
@@ -255,7 +268,11 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         future: fetchAvailableCollections(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: 
+            CircularProgressIndicator(
+              color: Colors.black, // Ganti warna loading indicator menjadi hitam
+              strokeWidth: 2,
+            ));
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
@@ -279,7 +296,10 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context), // Close dialog
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black, // Warna teks hitam
+                ),
                 child: const Text('Cancel'),
               ),
             ],
@@ -317,7 +337,11 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
           future: futureCollection,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: 
+              CircularProgressIndicator(
+                color: Colors.black, // Ganti warna loading indicator menjadi hitam
+                strokeWidth: 2,
+              ));
             } else if (snapshot.hasError) {
               return Scaffold(
                 appBar: AppBar(

@@ -171,7 +171,10 @@ class _WishlistPageState extends State<WishlistPage> {
         future: futureCollections,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(
+              color: Colors.black, // Ganti warna loading indicator menjadi hitam
+              strokeWidth: 2,
+            ));
           }
 
           if (snapshot.hasError) {

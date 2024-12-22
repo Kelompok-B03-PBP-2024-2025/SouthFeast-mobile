@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
-// import 'package:southfeast_mobile/dashboard/screen/product_detail.dart';
-import 'package:southfeast_mobile/product/screens/detail_makanan.dart'; // Added import for DetailMakanan
+import 'package:southfeast_mobile/product/screens/detail_makanan.dart'; 
 
 class CollectionDetailPage extends StatefulWidget {
   final int collectionId;
@@ -160,10 +159,16 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Close dialog
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black, // Warna teks hitam
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Background hitam
+              foregroundColor: Colors.white, // Teks putih
+            ),
             onPressed: () async {
               Navigator.pop(context); // Close confirm dialog
               await deleteCollection(collectionId);
@@ -199,9 +204,16 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // Close dialog
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black, // Warna teks hitam
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Background hitam
+              foregroundColor: Colors.white, // Teks putih
+            ),
             onPressed: () async {
               final newName = nameController.text.trim();
               final newDesc = descController.text.trim();
@@ -255,7 +267,11 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
         future: fetchAvailableCollections(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: 
+            CircularProgressIndicator(
+              color: Colors.black, // Ganti warna loading indicator menjadi hitam
+              strokeWidth: 2,
+            ));
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
@@ -279,7 +295,10 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context), // Close dialog
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.black, // Warna teks hitam
+                ),
                 child: const Text('Cancel'),
               ),
             ],
@@ -317,7 +336,11 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
           future: futureCollection,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: 
+              CircularProgressIndicator(
+                color: Colors.black, // Ganti warna loading indicator menjadi hitam
+                strokeWidth: 2,
+              ));
             } else if (snapshot.hasError) {
               return Scaffold(
                 appBar: AppBar(
@@ -336,7 +359,7 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                   child: Text('No data found.'),
                 ),
               );
-            }
+            } 
 
             final data = snapshot.data!;
             final isDefault = data['is_default'] ?? false;

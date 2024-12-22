@@ -1,4 +1,5 @@
 [![Build status](https://build.appcenter.ms/v0.1/apps/2a5f4762-0278-48a4-a0fc-9ca86e798a88/branches/main/badge)](https://appcenter.ms)
+[![Build status](https://install.appcenter.ms/orgs/Kelompok-B03-PBP-2024-2025/apps/SouthFeast)
 # SouthFeasts
 
 # South Jakarta Flavors, SouthFeasts Delivers! 🍜🍖

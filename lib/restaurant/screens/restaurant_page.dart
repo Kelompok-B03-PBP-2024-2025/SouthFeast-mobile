@@ -58,7 +58,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
         page: page,
       );
 
-      print('Received ${restaurantData.restaurants.length} restaurants'); // Debug print
+      print('Received ${restaurantData.restaurants.length} restaurants');
 
       setState(() {
         if (page == 1) {
@@ -74,7 +74,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
       });
       
     } catch (e) {
-      print('Error in _fetchRestaurants: $e'); // Debug print for errors
+      print('Error in _fetchRestaurants: $e');
       setState(() {
         _isLoading = false;
       });
@@ -88,7 +88,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
     setState(() {
       _currentPage = 1;
       _restaurants.clear();
-      _isLoading = true;  // Add loading state
+      _isLoading = true;
     });
     await _fetchRestaurants();
   }
@@ -97,6 +97,57 @@ class _RestaurantPageState extends State<RestaurantPage> {
     _currentPage = 1;
     _restaurants.clear();
     _fetchRestaurants();
+  }
+
+  Future<void> _handleReservationsNavigation() async {
+    final request = context.read<CookieRequest>();
+    
+    // Check if user is logged in by checking the cookies
+    final isLoggedIn = request.loggedIn;
+    
+    if (!isLoggedIn) {
+      // Show login dialog
+      final shouldNavigate = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Required'),
+          content: const Text('You need to be logged in to view reservations. Would you like to login?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Login'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldNavigate == true) {
+        // Navigate to login page
+        Navigator.pushNamed(context, '/login').then((value) {
+          // After login, check if user is now logged in
+          if (request.loggedIn) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ReservationViewAllScreen(),
+              ),
+            );
+          }
+        });
+      }
+    } else {
+      // User is logged in, navigate directly to reservations
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ReservationViewAllScreen(),
+        ),
+      );
+    }
   }
 
   @override
@@ -117,28 +168,21 @@ class _RestaurantPageState extends State<RestaurantPage> {
             onSearchSubmitted: (_) => _applyFilters(),
           ),
           Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ReservationViewAllScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.book_online),
-              label: const Text('My Reservations'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _handleReservationsNavigation,
+                icon: const Icon(Icons.book_online),
+                label: const Text('My Reservations'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
               ),
             ),
           ),
-        ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshData,
@@ -146,21 +190,14 @@ class _RestaurantPageState extends State<RestaurantPage> {
                 restaurants: _restaurants,
                 scrollController: _scrollController,
                 isLoading: _isLoading,
-                onRefresh: () => _refreshData(),  // Use _refreshData directly
+                onRefresh: () => _refreshData(),
               ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ReservationViewAllScreen(),
-            ),
-          );
-        },
+        onPressed: _handleReservationsNavigation,
         label: const Text('My Reservations'),
         icon: const Icon(Icons.book_online),
         backgroundColor: Colors.black,

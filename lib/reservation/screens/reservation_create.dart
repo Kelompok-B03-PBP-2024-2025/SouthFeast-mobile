@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:southfeast_mobile/authentication/screens/login.dart';
 
 class ReservationCreateScreen extends StatefulWidget {
   final String restaurantName;
-  final int restaurantId; // Tambahkan restaurant ID
-  final int? selectedFoodId;
-  final String? selectedFoodName;
+  final int restaurantId;
 
   const ReservationCreateScreen({
     Key? key,
     required this.restaurantName,
-    required this.restaurantId, // Tambahkan parameter ini
-    this.selectedFoodId,
-    this.selectedFoodName,
+    required this.restaurantId,
   }) : super(key: key);
 
   @override
@@ -28,40 +24,6 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
   TimeOfDay? _selectedTime;
   int _numberOfPeople = 1;
   bool _isLoading = false;
-  List<Map<String, dynamic>> _availableFoods = [];
-  int? _selectedFoodId;
-  String? _selectedFoodName;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedFoodId = widget.selectedFoodId;
-    _selectedFoodName = widget.selectedFoodName;
-    _fetchAvailableFoods();
-  }
-
-  Future<void> _fetchAvailableFoods() async {
-    final request = context.read<CookieRequest>();
-    try {
-      // Menggunakan endpoint yang sudah ada
-      final response = await request.get(
-        'http://southfeast-production.up.railway.app/restaurant/get/${widget.restaurantId}/'
-      );
-      
-      // Mengambil daftar menu dari response
-      if (response['menus'] != null) {
-        setState(() {
-          _availableFoods = List<Map<String, dynamic>>.from(response['menus']);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading foods: $e')),
-        );
-      }
-    }
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -102,18 +64,23 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
     final request = context.read<CookieRequest>();
 
     try {
+      if (!request.loggedIn) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginApp()),
+        );
+        return;
+      }
+
       final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate!);
       final timeStr = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
 
-      // Menggunakan endpoint create_reservation yang sudah ada
       final response = await request.post(
         'http://southfeast-production.up.railway.app/restaurant/create-reservation/${widget.restaurantId}/',
-        jsonEncode({
+        {
           'date': dateStr,
           'time': timeStr,
-          'number_of_people': _numberOfPeople,
-          'food_id': _selectedFoodId,
-        }),
+          'number_of_people': _numberOfPeople.toString(),
+        },
       );
 
       if (mounted) {
@@ -156,7 +123,6 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Restaurant Name Display
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -184,34 +150,6 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Food Selection
-              // DropdownButtonFormField<int>(
-              //   value: _selectedFoodId,
-              //   decoration: const InputDecoration(
-              //     labelText: 'Select Food',
-              //     border: OutlineInputBorder(),
-              //   ),
-              //   items: _availableFoods.map((food) {
-              //     return DropdownMenuItem<int>(
-              //       value: food['id'],
-              //       child: Text(food['name']),
-              //     );
-              //   }).toList(),
-              //   onChanged: (value) {
-              //     setState(() {
-              //       _selectedFoodId = value;
-              //       _selectedFoodName = _availableFoods
-              //           .firstWhere((food) => food['id'] == value)['name'];
-              //     });
-              //   },
-              //   validator: (value) {
-              //     if (value == null) return 'Please select a food';
-              //     return null;
-              //   },
-              // ),
-              const SizedBox(height: 16),
-
-              // Date Selection
               ListTile(
                 title: const Text('Reservation Date'),
                 subtitle: Text(
@@ -228,7 +166,6 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Time Selection
               ListTile(
                 title: const Text('Reservation Time'),
                 subtitle: Text(
@@ -245,7 +182,6 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Number of People
               Row(
                 children: [
                   const Text('Number of People'),
@@ -272,7 +208,6 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Submit Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

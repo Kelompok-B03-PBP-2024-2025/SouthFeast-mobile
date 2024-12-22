@@ -17,11 +17,13 @@ String fixUtf8(String text) {
 class ArticleDetailPage extends StatefulWidget {
   final ArticlePage article;
   final Function(String)? onArticleDeleted;
+  final Function? onUpdate;
 
   const ArticleDetailPage({
     super.key,
     required this.article,
     this.onArticleDeleted,
+    this.onUpdate,
   });
 
   @override
@@ -29,6 +31,7 @@ class ArticleDetailPage extends StatefulWidget {
 }
 
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
+  late ArticlePage currentArticle;
   final _formKey = GlobalKey<FormState>();
   final _commentController = TextEditingController();
   bool isUpdated = false; // Tambahkan ini di dalam _ArticleDetailPageState
@@ -39,6 +42,12 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    currentArticle = widget.article;  // Tambahkan ini
   }
 
   Future<bool> isAuthenticated() async {
@@ -58,43 +67,46 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   }
 
  Future<void> _editArticle() async {
-  final result = await Navigator.push(
-    context,
+  final result = await Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => ArticleFormPage(
-        articleId: widget.article.pk,
-        initialTitle: widget.article.fields.title,
-        initialContent: widget.article.fields.content,
+        articleId: currentArticle.pk,
+        initialTitle: currentArticle.fields.title,
+        initialContent: currentArticle.fields.content,
       ),
     ),
   );
 
-  // Jika artikel berhasil diperbarui, gunakan data langsung
-  if (result != null && mounted) {
+  if (result != null && mounted && result['success'] == true) {
+    // Update state dengan data baru
     setState(() {
-      widget.article.fields.title = result['title'];
-      widget.article.fields.content = result['content'];
+      currentArticle.fields.title = result['title'];
+      currentArticle.fields.content = result['content'];
+      isUpdated = true;
     });
+
+    // Panggil callback onUpdate jika ada
+    if (widget.onUpdate != null) {
+      widget.onUpdate!();
+    }
+
+    // Refresh UI dengan rebuild widget
+    if (mounted) {
+      setState(() {});
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Article updated successfully!')),
     );
-
-    // Kembalikan data perubahan ke halaman daftar
-    Navigator.pop(context, {
-      'pk': widget.article.pk,
-      'title': result['title'],
-      'content': result['content'],
-    });
   }
- }
+}
 
   Future<void> _postComment(CookieRequest request) async {
     if (!_formKey.currentState!.validate()) return;
 
     try {
       final requestData = {
-        'article_id': widget.article.pk.toString(),
+        'article_id': currentArticle.pk.toString(),
         'content': _commentController.text,
       };
 
@@ -126,7 +138,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         );
 
         setState(() {
-          widget.article.fields.comments.add(newComment);
+          currentArticle.fields.comments.add(newComment);
           _commentController.clear();
         });
 
@@ -291,18 +303,24 @@ Future<void> _deleteArticle() async {
 
  @override
   Widget build(BuildContext context) {
-    final fields = widget.article.fields;
+    final fields = currentArticle.fields;
     final comments = fields.comments;
     final request = context.watch<CookieRequest>();
 
     return Scaffold(
-      key: ValueKey(fields.title + fields.content),
+      key: ValueKey('${fields.title}-${fields.content}'),
       appBar: AppBar(
         title: const Text('Article Detail'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context, isUpdated);
+            Navigator.pop(context, {
+              'updated': isUpdated,
+              'deleted': false,
+              'pk': currentArticle.pk,
+              'title': currentArticle.fields.title,
+              'content': currentArticle.fields.content,
+            });
           },
         ),
         actions: [

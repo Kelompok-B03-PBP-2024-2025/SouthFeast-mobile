@@ -104,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                       final password = _passwordController.text;
 
                       final response = await request.login(
-                        "http://10.0.2.2:8000/auth/api/login/",
+                        "https://southfeast-production.up.railway.app/auth/api/login/",
                         {
                           'username': username,
                           'password': password,

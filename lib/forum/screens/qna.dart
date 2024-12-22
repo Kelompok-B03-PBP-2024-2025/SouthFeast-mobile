@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:southfeast_mobile/authentication/screens/login.dart';
 import '../models/qna_page.dart';
 import 'qna_detail.dart';
 import 'qna_form.dart';
@@ -67,19 +68,24 @@ class _QnaListPageState extends State<QnaListPage> {
   }
 }
 
-  void _handleTabChange(String title) {
+  void _handleTabChange(String title) async { 
     final request = context.read<CookieRequest>();
+    
     if (title == 'Your QnA' && !request.loggedIn) {
-      Navigator.of(context).pushReplacementNamed('/login');
-      return;
+      // Langsung navigasi ke login page
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;  // Keluar dari fungsi
     }
 
+    // Jika sudah login atau memilih Public QnA
     setState(() {
       selectedTab = title;
-      isLoading = true;
+      isLoading = true; 
+      error = null;
     });
-
-    fetchQuestions();
   }
 
   Future<void> _handleAddQuestion() async {
@@ -117,7 +123,7 @@ class _QnaListPageState extends State<QnaListPage> {
                     'Public QnA',
                     style: TextStyle(
                       color: selectedTab == 'Public QnA'
-                          ? const Color(0xFF3B5FFF)
+                          ? const Color.fromARGB(255, 13, 72, 119)
                           : Colors.grey,
                       fontSize: 16,
                       fontWeight: selectedTab == 'Public QnA'
@@ -133,7 +139,7 @@ class _QnaListPageState extends State<QnaListPage> {
                     'Your QnA',
                     style: TextStyle(
                       color: selectedTab == 'Your QnA'
-                          ? const Color(0xFF3B5FFF)
+                          ? const Color.fromARGB(255, 13, 72, 119)
                           : Colors.grey,
                       fontSize: 16,
                       fontWeight: selectedTab == 'Your QnA'
@@ -222,7 +228,7 @@ class _QnaListPageState extends State<QnaListPage> {
               ),
             );
 
-            if (result != null && mounted) {
+            if (result != null) {
               if (result['deleted'] == true) {
                 setState(() {
                   questions.removeWhere((q) => q.pk == result['questionId']);
@@ -237,25 +243,7 @@ class _QnaListPageState extends State<QnaListPage> {
               }
             }
           },
-            // onTap: () async {
-            //   final result = await Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //       builder: (context) => QuestionDetailPage(question: question),
-            //     ),
-            //   );
-
-            //   if (result != null && result is Map && result['deleted'] == true) {
-            //     // First update state immediately for better UX
-            //     setState(() {
-            //       questions.removeWhere((q) => q.pk == result['questionId']);
-            //     });
-                
-            //     // Then refresh from API to ensure consistency
-            //     fetchQuestions();
-            //   }
-            // }
-          );
+        );
         },
       ),
     );

@@ -1,17 +1,18 @@
-// lib/widgets/review_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/review/models/review_entry.dart';
+import 'package:southfeast_mobile/review/screens/edit_review.dart';
 import 'package:southfeast_mobile/review/screens/detail_review.dart';
 
 class ReviewCard extends StatelessWidget {
   final ReviewEntry review;
   final bool isStaff;
+  final bool showEditButton;
 
   const ReviewCard({
     super.key,
     required this.review,
     this.isStaff = false,
+    this.showEditButton = false,
   });
 
   @override
@@ -21,106 +22,121 @@ class ReviewCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: (review.reviewImage != null)
-                ? Image.network(
-                    review.reviewImage!,
-                    fit: BoxFit.cover,
-                    // Jika gambar error, gunakan fallback
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.network(
-                        'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  )
-                : Image.network(
-                    'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-                    fit: BoxFit.cover,
-                  ),
-          ),
-          // Konten
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header with user and rating
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Baris: user + rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      review.user,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                Expanded(
+                  child: Text(
+                    review.user,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                    Text(
-                      'Rating: ${review.rating}/5',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Menu item
-                Text(
-                  review.menuItem,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                // Review text (truncated)
-                Text(
-                  review.reviewText,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                const SizedBox(height: 8),
-                // Tanggal
-                Text(
-                  'Posted on: ${review.createdAt.toString().substring(0, 10)}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                // Tombol "View More"
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        // Tampilkan detail review
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailReviewPage(
-                              review: review,
-                              isStaff: isStaff,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'View More',
-                        style: TextStyle(color: Colors.blue),
-                      ),
+                    const Icon(Icons.star, color: Colors.amber, size: 16),
+                    Text(
+                      ' ${review.rating}',
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+
+            // Menu item name
+            Text(
+              review.menuItem,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+
+            // Review text
+            Text(
+              review.reviewText,
+              style: const TextStyle(fontSize: 13),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+
+            // Date
+            Text(
+              review.createdAt.toString().substring(0, 10),
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+            const Spacer(),
+
+            // Action buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailReviewPage(
+                          review: review,
+                          isStaff: isStaff,
+                        ),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(60, 30),
+                  ),
+                  child: const Text(
+                    'View',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+                if (showEditButton)
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditReviewPage(
+                            reviewId: review.id,
+                            initialReviewText: review.reviewText,
+                            initialRating: review.rating,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Edit', style: TextStyle(fontSize: 12)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(60, 30),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,8 +1,5 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -23,23 +20,7 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
   final TextEditingController _reviewTextController = TextEditingController();
   final TextEditingController _ratingController = TextEditingController();
 
-  XFile? _selectedImage;
-  String? _uploadedImageUrl; // Menyimpan URL gambar setelah upload
-
-  /// Fungsi untuk pilih foto dari gallery
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final XFile? pickedFile = 
-        await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = pickedFile;
-        _uploadedImageUrl = null; // Reset URL gambar yang diupload sebelumnya
-      });
-    }
-  }
-
-  /// Fungsi untuk submit data ke Django via base64
+  /// Function to submit review without image
   Future<void> _submitReview() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -48,25 +29,18 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
     final reviewText = _reviewTextController.text.trim();
     final rating = _ratingController.text.trim();
 
-    // Ubah gambar ke base64 jika ada
-    String? base64Image;
-    if (_selectedImage != null) {
-      final bytes = await _selectedImage!.readAsBytes();
-      base64Image = base64Encode(bytes);
-    }
-
     // Get the request instance
     final request = context.read<CookieRequest>();
 
     try {
-      // Kirim request menggunakan pbp_django_auth
+      // Send request to Django API
       final response = await request.postJson(
         'https://southfeast-production.up.railway.app/review/createreview/',
         jsonEncode({
           "menu_item_id": widget.menuItemId,
           "review_text": reviewText,
           "rating": rating,
-          "image": base64Image, // null jika tidak ada gambar
+          "image": null, // Ensure image is always null
         }),
       );
 
@@ -74,12 +48,6 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Review created successfully!")),
         );
-        if (response['review_image_url'] != null) {
-          setState(() {
-            _uploadedImageUrl = response['review_image_url'];
-            _selectedImage = null;
-          });
-        }
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -140,30 +108,6 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
                   }
                   return null;
                 },
-              ),
-              const SizedBox(height: 16),
-
-              // Image Picker
-              GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  width: double.infinity,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                  ),
-                  child: _uploadedImageUrl != null
-                      ? Image.network(
-                          _uploadedImageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(child: Text("Failed to load image"));
-                          },
-                        )
-                      : (_selectedImage != null
-                          ? const Center(child: Text("Image will be displayed after upload"))
-                          : const Center(child: Text("Tap to pick an image (optional)"))),
-                ),
               ),
               const SizedBox(height: 24),
 

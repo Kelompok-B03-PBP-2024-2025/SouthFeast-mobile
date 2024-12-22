@@ -26,6 +26,28 @@ class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateM
   late TabController _tabController;
   late Future<List<ReviewEntry>> _reviewsFuture;
   final TextEditingController _searchController = TextEditingController();
+  bool isLoading = true;
+  String? error;
+
+  Future<List<ReviewEntry>> fetchReviews({String query = '', bool myReviews = false}) async {
+    final request = context.read<CookieRequest>();
+
+    try {
+      final response = await request.get(
+        'https://southfeast-production.up.railway.app/review/json/'
+        '?search=${Uri.encodeComponent(query)}&my_reviews=$myReviews',
+      );
+
+      if (response is List) {
+        return response.map((item) => ReviewEntry.fromJson(item)).toList();
+      } else {
+        throw Exception('Invalid response format');
+      }
+    } catch (e) {
+      debugPrint('Error fetching reviews: $e');
+      throw Exception('Error fetching reviews: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -46,35 +68,6 @@ class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateM
       }
     });
   }
-
-  Future<List<ReviewEntry>> fetchReviews({String query = '', bool myReviews = false}) async {
-    try {
-      final request = context.read<CookieRequest>();
-
-      // URL dengan parameter pencarian dan filter
-      final url = Uri.parse(
-        'https://southfeast-production.up.railway.app/review/json/'
-        '?search=${Uri.encodeComponent(query)}&my_reviews=${myReviews.toString()}',
-      ).toString();
-
-      // Permintaan GET dengan cookie
-      final response = await request.get(url);
-
-      // Periksa status HTTP
-      if (response['status'] == 200) { // Periksa status sebagai integer
-        // Konversi data JSON menjadi objek ReviewEntry
-        final List<dynamic> reviewData = response['data'];
-        return reviewData.map((e) => ReviewEntry.fromJson(e)).toList();
-      } else {
-        throw Exception('Failed to load reviews: ${response['message']}');
-      }
-    } catch (e) {
-      // Log kesalahan dan lempar ulang untuk ditangani di FutureBuilder
-      debugPrint('Error fetching reviews: $e');
-      rethrow;
-    }
-  }
-
 
   void _onSearch() {
     setState(() {
@@ -251,13 +244,15 @@ class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateM
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 0.7,
+            mainAxisExtent: 220, // Set fixed height for each card
+            childAspectRatio: 1, // This will be ignored when using mainAxisExtent
           ),
           itemBuilder: (context, index) {
             final review = reviews[index];
             return ReviewCard(
               review: review,
-              isStaff: widget.isStaff, // Kirimkan username saat ini
+              isStaff: widget.isStaff,
+              showEditButton: _tabController.index == 1,
             );
           },
         );

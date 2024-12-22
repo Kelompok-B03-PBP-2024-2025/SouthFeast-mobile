@@ -37,66 +37,64 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   }
 
   Future<void> _deleteQuestion(CookieRequest request) async {
-  final bool? confirm = await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Delete Question'),
-        content: const Text('Are you sure you want to delete this question?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      );
-    },
-  );
-
-  if (confirm == true) {
-    try {
-      // Using postJson without method specification
-      final response = await request.postJson(
-        'https://southfeast-production.up.railway.app/forum/api/question/delete/${widget.question.pk}/',
-        jsonEncode({}) // Send empty JSON object
-      );
-
-      if (!mounted) return;
-
-      if (response != null && response['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Question deleted successfully')),
+    final bool? confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Question'),
+          content: const Text('Are you sure you want to delete this question?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.black),
+              child: const Text('Delete'),
+            ),
+          ],
         );
-        // Pass back deletion status AND the question ID
-        Navigator.pop(context, {
-          'deleted': true,
-          'questionId': widget.question.pk
-        });
-      } else {
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        final response = await request.get(
+          'https://southfeast-production.up.railway.app/forum/api/question/delete-flutter/${widget.question.pk}/',
+        );
+
+        if (!mounted) return;
+
+        if (response != null && response['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Question deleted successfully')),
+          );
+          // Pass back deletion status AND the question ID
+          Navigator.pop(context, {
+            'deleted': true,
+            'questionId': widget.question.pk
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response?['message'] ?? 'Failed to delete question'),
+              backgroundColor: Colors.black,
+            ),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response?['message'] ?? 'Failed to delete question'),
-            backgroundColor: Colors.red,
+            content: Text('Error: $e'),
+            backgroundColor: Colors.black,
           ),
         );
       }
-    } catch (e) {
-      if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
-}
 
   Future<void> _deleteAnswer(CookieRequest request, Answer answer) async {
   final bool? confirm = await showDialog(
@@ -112,7 +110,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Colors.black),
             child: const Text('Delete'),
           ),
         ],
@@ -139,14 +137,14 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Answer deleted successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response['message'] ?? 'Failed to delete answer'),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
           ),
         );
       }
@@ -155,7 +153,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
     }
@@ -211,14 +209,14 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
         scaffoldMessenger.showSnackBar(
           const SnackBar(
             content: Text('Answer posted successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
         );
       } else {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(response?['message'] ?? 'Failed to post answer'),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
           ),
         );
       }
@@ -226,7 +224,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         ),
       );
     }
@@ -422,7 +420,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                                     if (answer.fields.canEdit || answer.fields.isStaff)
                                       IconButton(
                                         icon: const Icon(Icons.delete, size: 20),
-                                        color: Colors.red,
+                                        color: const Color.fromARGB(255, 0, 0, 0),
                                         onPressed: () => _deleteAnswer(
                                           request,
                                           answer,

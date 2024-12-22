@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-// ignore: depend_on_referenced_packages
-import 'package:http/http.dart' as http;
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:southfeast_mobile/review/models/review_entry.dart';
-import 'package:southfeast_mobile/review/screens/detail_review.dart';
+import 'package:southfeast_mobile/review/widget/review_card.dart'; // Pastikan path benar
 
 class ReviewPage extends StatefulWidget {
   final bool isStaff;
@@ -20,35 +22,64 @@ class ReviewPage extends StatefulWidget {
   State<ReviewPage> createState() => _ReviewPageState();
 }
 
-class _ReviewPageState extends State<ReviewPage> {
+class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   late Future<List<ReviewEntry>> _reviewsFuture;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _reviewsFuture = fetchReviews();
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          if (_tabController.index == 0) {
+            // All Reviews
+            _reviewsFuture = fetchReviews();
+          } else if (_tabController.index == 1) {
+            // My Reviews
+            _reviewsFuture = fetchReviews(myReviews: true);
+          }
+        });
+      }
+    });
   }
 
-  Future<List<ReviewEntry>> fetchReviews([String query = '']) async {
+  Future<List<ReviewEntry>> fetchReviews({String query = '', bool myReviews = false}) async {
     try {
-      const baseUrl = 'https://southfeast-production.up.railway.app/review/json/';
-      final url = Uri.parse('$baseUrl?search=$query');
-      final response = await http.get(url);
+      final request = context.read<CookieRequest>();
 
-      if (response.statusCode == 200) {
-        return reviewEntryFromJson(response.body);
+      // URL dengan parameter pencarian dan filter
+      final url = Uri.parse(
+        'https://southfeast-production.up.railway.app/review/json/'
+        '?search=${Uri.encodeComponent(query)}&my_reviews=${myReviews.toString()}',
+      ).toString();
+
+      // Permintaan GET dengan cookie
+      final response = await request.get(url);
+
+      // Periksa status HTTP
+      if (response['status'] == 200) { // Periksa status sebagai integer
+        // Konversi data JSON menjadi objek ReviewEntry
+        final List<dynamic> reviewData = response['data'];
+        return reviewData.map((e) => ReviewEntry.fromJson(e)).toList();
       } else {
-        throw Exception('Failed to load reviews');
+        throw Exception('Failed to load reviews: ${response['message']}');
       }
     } catch (e) {
+      // Log kesalahan dan lempar ulang untuk ditangani di FutureBuilder
+      debugPrint('Error fetching reviews: $e');
       rethrow;
     }
   }
 
+
   void _onSearch() {
     setState(() {
-      _reviewsFuture = fetchReviews(_searchController.text);
+      final isMyReviews = _tabController.index == 1;
+      _reviewsFuture = fetchReviews(query: _searchController.text, myReviews: isMyReviews);
     });
   }
 
@@ -59,6 +90,7 @@ class _ReviewPageState extends State<ReviewPage> {
         child: Column(
           children: [
             _buildHeroSection(context),
+            _buildTabBar(),
             FutureBuilder<List<ReviewEntry>>(
               future: _reviewsFuture,
               builder: (context, snapshot) {
@@ -112,12 +144,12 @@ class _ReviewPageState extends State<ReviewPage> {
           width: double.infinity,
           color: Colors.black.withOpacity(0.5),
         ),
-        Positioned.fill(
+        const Positioned.fill(
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Reviews',
                   style: TextStyle(
                     fontFamily: 'La Belle Aurore',
@@ -126,25 +158,11 @@ class _ReviewPageState extends State<ReviewPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   'These reviews don’t lie – this place won’t disappoint!',
                   style: TextStyle(color: Colors.grey, fontSize: 16),
                   textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    side: const BorderSide(color: Colors.white),
-                    foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  onPressed: () {
-                    // Aksi tombol "See Reviews" (mis. scroll ke bawah)
-                  },
-                  child: const Text('See Reviews'),
                 ),
               ],
             ),
@@ -154,8 +172,19 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  Widget _buildReviewsSection(
-      BuildContext context, List<ReviewEntry> reviews) {
+  Widget _buildTabBar() {
+    return TabBar(
+      controller: _tabController,
+      labelColor: Colors.black,
+      indicatorColor: Colors.blue,
+      tabs: const [
+        Tab(text: 'All Reviews'),
+        Tab(text: 'My Reviews'),
+      ],
+    );
+  }
+
+  Widget _buildReviewsSection(BuildContext context, List<ReviewEntry> reviews) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Column(
@@ -226,120 +255,13 @@ class _ReviewPageState extends State<ReviewPage> {
           ),
           itemBuilder: (context, index) {
             final review = reviews[index];
-            return _buildReviewCard(review);
+            return ReviewCard(
+              review: review,
+              isStaff: widget.isStaff, // Kirimkan username saat ini
+            );
           },
         );
       },
-    );
-  }
-
-  Widget _buildReviewCard(ReviewEntry review) {
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: (review.reviewImage != null)
-                ? Image.network(
-                    review.reviewImage!,
-                    fit: BoxFit.cover,
-                    // Jika gambar error, gunakan fallback
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.network(
-                        'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  )
-                : Image.network(
-                    'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-                    fit: BoxFit.cover,
-                  ),
-          ),
-          // Konten
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Baris: user + rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      review.user,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      'Rating: ${review.rating}/5',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Menu item
-                Text(
-                  review.menuItem,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                // Review text (truncated)
-                Text(
-                  review.reviewText,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                const SizedBox(height: 8),
-                // Tanggal
-                Text(
-                  'Posted on: ${review.createdAt.toString().substring(0, 10)}',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                // Tombol "View More"
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        // Tampilkan detail review
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailReviewPage(
-                              review: review,
-                              isStaff: widget.isStaff,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'View More',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

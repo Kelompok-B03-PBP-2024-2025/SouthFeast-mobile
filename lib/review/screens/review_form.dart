@@ -61,7 +61,7 @@ class _ReviewFormPageState extends State<ReviewFormPage> {
     try {
       // Kirim request menggunakan pbp_django_auth
       final response = await request.postJson(
-        'http://10.0.2.2:8000/review/createreview/',
+        'https://southfeast-production.up.railway.app/review/createreview/',
         jsonEncode({
           "menu_item_id": widget.menuItemId,
           "review_text": reviewText,

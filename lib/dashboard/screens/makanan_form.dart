@@ -15,7 +15,7 @@ class _MakananFormState extends State<MakananForm> {
 
   String _name = '';
   String _description = '';
-  double  _price = 0;
+  double _price = 0;
   String _image = '';
   String _category = '';
   String _restaurant_name = '';
@@ -85,7 +85,8 @@ class _MakananFormState extends State<MakananForm> {
           width: 2.0,
         ),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
     );
   }
 
@@ -100,10 +101,7 @@ class _MakananFormState extends State<MakananForm> {
         centerTitle: true,
         title: const Text('Add Food Item'),
         titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: Colors.white
-        ),
+            fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
         elevation: 0,
       ),
       body: Form(
@@ -123,34 +121,45 @@ class _MakananFormState extends State<MakananForm> {
                     child: Column(
                       children: [
                         TextFormField(
-                          decoration: _buildDecoration('Name', 'Enter food name'),
+                          decoration:
+                              _buildDecoration('Name', 'Enter food name'),
                           onChanged: (value) => _name = value,
-                          validator: (value) => value!.isEmpty ? "Name cannot be empty!" : null,
+                          validator: (value) =>
+                              value!.isEmpty ? "Name cannot be empty!" : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
-                          decoration: _buildDecoration('Description', 'Enter food description'),
+                          decoration: _buildDecoration(
+                              'Description', 'Enter food description'),
                           onChanged: (value) => _description = value,
-                          validator: (value) => value!.isEmpty ? "Description cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Description cannot be empty!"
+                              : null,
                           maxLines: null,
                           keyboardType: TextInputType.multiline,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           decoration: _buildDecoration('Price', 'Enter price'),
-                          onChanged: (value) => _price = double.tryParse(value) ?? 0,
+                          onChanged: (value) =>
+                              _price = double.tryParse(value) ?? 0,
                           keyboardType: TextInputType.number,
-                          validator: (value) => value!.isEmpty ? "Price cannot be empty!" : null,
+                          validator: (value) =>
+                              value!.isEmpty ? "Price cannot be empty!" : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
-                          decoration: _buildDecoration('Image URL', 'Enter image URL'),
+                          decoration:
+                              _buildDecoration('Image URL', 'Enter image URL'),
                           onChanged: (value) => _image = value,
-                          validator: (value) => value!.isEmpty ? "Image URL cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Image URL cannot be empty!"
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          decoration: _buildDecoration('Category', 'Select category'),
+                          decoration:
+                              _buildDecoration('Category', 'Select category'),
                           value: _category.isEmpty ? null : _category,
                           items: categoryChoices.map((String category) {
                             return DropdownMenuItem<String>(
@@ -163,36 +172,46 @@ class _MakananFormState extends State<MakananForm> {
                               _category = newValue ?? '';
                             });
                           },
-                          validator: (value) => value == null ? "Please select a category" : null,
+                          validator: (value) =>
+                              value == null ? "Please select a category" : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
-                          decoration: _buildDecoration('Restaurant Name', 'Enter restaurant name'),
+                          decoration: _buildDecoration(
+                              'Restaurant Name', 'Enter restaurant name'),
                           onChanged: (value) => _restaurant_name = value,
-                          validator: (value) => value!.isEmpty ? "Restaurant name cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Restaurant name cannot be empty!"
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          decoration: _buildDecoration('Kecamatan', 'Select kecamatan'),
+                          decoration:
+                              _buildDecoration('Kecamatan', 'Select kecamatan'),
                           value: _kecamatan.isEmpty ? null : _kecamatan,
                           items: kecamatanChoices.map((String kecamatan) {
                             return DropdownMenuItem<String>(
                               value: kecamatan,
                               child: Text(kecamatan),
-                          );
+                            );
                           }).toList(),
                           onChanged: (String? newValue) {
                             setState(() {
                               _kecamatan = newValue ?? '';
                             });
                           },
-                          validator: (value) => value == null ? "Please select a kecamatan" : null,
+                          validator: (value) => value == null
+                              ? "Please select a kecamatan"
+                              : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
-                          decoration: _buildDecoration('Location', 'Enter location'),
+                          decoration:
+                              _buildDecoration('Location', 'Enter location'),
                           onChanged: (value) => _location = value,
-                          validator: (value) => value!.isEmpty ? "Location cannot be empty!" : null,
+                          validator: (value) => value!.isEmpty
+                              ? "Location cannot be empty!"
+                              : null,
                           maxLines: null,
                           keyboardType: TextInputType.multiline,
                         ),
@@ -206,10 +225,10 @@ class _MakananFormState extends State<MakananForm> {
                                 : () async {
                                     if (_formKey.currentState!.validate()) {
                                       setState(() => _isLoading = true);
-                                      
+
                                       try {
                                         final response = await request.postJson(
-                                          'http://10.0.2.2:8000/dashboard/create-makanan-flutter/',
+                                          'https://southfeast-production.up.railway.app/dashboard/create-makanan-flutter/',
                                           jsonEncode({
                                             'name': _name,
                                             'description': _description,
@@ -227,10 +246,12 @@ class _MakananFormState extends State<MakananForm> {
                                             context: context,
                                             builder: (context) => AlertDialog(
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(15),
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
                                               ),
                                               title: const Text('Success'),
-                                              content: const Text('Food item added successfully!'),
+                                              content: const Text(
+                                                  'Food item added successfully!'),
                                               actions: [
                                                 TextButton(
                                                   child: const Text('OK'),
@@ -252,7 +273,8 @@ class _MakananFormState extends State<MakananForm> {
                                             actions: [
                                               TextButton(
                                                 child: const Text('OK'),
-                                                onPressed: () => Navigator.pop(context),
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
                                               ),
                                             ],
                                           ),
@@ -274,15 +296,16 @@ class _MakananFormState extends State<MakananForm> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white),
                                     ),
                                   )
                                 : const Text(
                                     'Save',
                                     style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white),
                                   ),
                           ),
                         ),
@@ -298,4 +321,3 @@ class _MakananFormState extends State<MakananForm> {
     );
   }
 }
-

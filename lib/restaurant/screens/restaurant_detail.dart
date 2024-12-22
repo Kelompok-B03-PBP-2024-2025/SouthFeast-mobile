@@ -15,13 +15,15 @@ class RestaurantDetailScreen extends StatefulWidget {
   final bool isStaff;
   final bool isAuthenticated;
   final VoidCallback? onRefresh;
+  final int? userID;
 
   const RestaurantDetailScreen({
     Key? key, 
     required this.restaurant,
     this.isStaff = false,
-    this.isAuthenticated = true,
+    this.isAuthenticated = false,
     this.onRefresh,
+    this.userID,
   }) : super(key: key);
 
   @override

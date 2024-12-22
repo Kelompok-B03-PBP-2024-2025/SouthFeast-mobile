@@ -40,7 +40,6 @@ class RestaurantService {
       final response = await request.get(
         'https://southfeast-production.up.railway.app/restaurant/get-restaurant/$restaurantId/',
       );
-
       if (response != null) {
         if (response is Map) {
           Map<String, dynamic> castedResponse = Map<String, dynamic>.from(response);

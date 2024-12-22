@@ -20,9 +20,6 @@ class MenuConfig {
           "title": "Home",
           "icon": Icons.home,
           "screen": MyHomePage(
-            isStaff: isStaff,
-            isAuthenticated: isAuthenticated,
-            username: username,
           ),
           "requiresAuth": false,
         },
@@ -51,9 +48,6 @@ class MenuConfig {
           "title": "Home",
           "icon": Icons.home,
           "screen": MyHomePage(
-            isStaff: isStaff,
-            isAuthenticated: isAuthenticated,
-            username: username,
           ),
           "requiresAuth": false,
         },

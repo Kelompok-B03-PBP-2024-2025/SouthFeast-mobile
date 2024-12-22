@@ -127,7 +127,7 @@ class ProductGrid extends StatelessWidget {
 
                               if (shouldDelete) {
                                 final request = context.read<CookieRequest>();
-                                final deleteUrl = 'https://southfeast-production.up.railway.app/delete-makanan-flutter/${product.id}/';
+                                final deleteUrl = 'https://southfeast-production.up.railway.app/dashboard/delete-makanan-flutter/${product.id}/';
                                 final response = await request.get(deleteUrl);
 
                                 if (response['status'] == 'success') {

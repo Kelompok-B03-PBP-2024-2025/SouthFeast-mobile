@@ -12,11 +12,11 @@ class DetailMakanan extends StatefulWidget {
   final bool isStaff;
 
   const DetailMakanan({
-    Key? key, 
+    super.key, 
     required this.result,
     required this.isStaff,
     required this.isAuthenticated,
-  }) : super(key: key);
+  });
 
   @override
   State<DetailMakanan> createState() => _DetailMakananState();
@@ -56,7 +56,6 @@ class _DetailMakananState extends State<DetailMakanan> {
       }
       throw Exception('Invalid response format');
     } catch (e) {
-      print('Error fetching reviews: $e');
       return [];
     }
   }

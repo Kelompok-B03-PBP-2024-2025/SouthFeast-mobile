@@ -1,3 +1,4 @@
+// lib/screens/dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/dashboard/models/product/product.dart';
 import 'package:southfeast_mobile/dashboard/models/product/result.dart';
@@ -7,10 +8,15 @@ import 'package:southfeast_mobile/dashboard/screens/makanan_form.dart';
 import 'package:southfeast_mobile/dashboard/widgets/filter_bottom_sheet.dart';
 import 'package:southfeast_mobile/dashboard/widgets/product_grid.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
-import '../../restaurant/screens/restaurant_page.dart';
+import 'package:southfeast_mobile/dashboard/screens/restaurant_page.dart'; // Add this import
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  final bool initialShowRestaurants;
+  
+  const DashboardPage({
+    super.key, 
+    this.initialShowRestaurants = false,
+  });
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -37,6 +43,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    _showRestaurants = widget.initialShowRestaurants;
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final request = context.read<CookieRequest>();
@@ -155,7 +162,7 @@ class _DashboardPageState extends State<DashboardPage> {
           // Conditional content
           Expanded(
             child: _showRestaurants
-                ? RestaurantPage()
+                ? const RestaurantPage(key: PageStorageKey('restaurant_page'))
                 : Column(
                     children: [
                       SearchFilterBar(

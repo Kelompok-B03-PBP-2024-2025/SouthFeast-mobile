@@ -1,16 +1,19 @@
-// lib/review/screens/edit_review.dart
-
-// ignore_for_file: use_build_context_synchronously
-
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:southfeast_mobile/review/models/review_entry.dart';
+import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class EditReviewPage extends StatefulWidget {
-  final ReviewEntry review;
+  final int reviewId; // ID ulasan untuk diedit
+  final String initialReviewText; // Teks ulasan awal
+  final double initialRating; // Rating awal
 
-  const EditReviewPage({super.key, required this.review});
+  const EditReviewPage({
+    super.key,
+    required this.reviewId,
+    required this.initialReviewText,
+    required this.initialRating,
+  });
 
   @override
   State<EditReviewPage> createState() => _EditReviewPageState();
@@ -21,59 +24,13 @@ class _EditReviewPageState extends State<EditReviewPage> {
   late TextEditingController _reviewTextController;
   late TextEditingController _ratingController;
 
+  bool _isSubmitting = false;
+
   @override
   void initState() {
     super.initState();
-    _reviewTextController = TextEditingController(text: widget.review.reviewText);
-    _ratingController = TextEditingController(text: widget.review.rating.toString());
-  }
-
-  Future<void> _submitEdit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    final updatedReviewText = _reviewTextController.text.trim();
-    final updatedRating = _ratingController.text.trim();
-
-    final Map<String, dynamic> requestBody = {
-      "review_text": updatedReviewText,
-      "rating": updatedRating,
-    };
-
-    try {
-      final url = Uri.parse('https://southfeast-production.up.railway.app/review/edit_review/${widget.review.id}/');
-
-      final response = await http.post(
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          // Tambahkan header otentikasi jika diperlukan, misalnya:
-          // "Authorization": "Bearer <token>",
-        },
-        body: jsonEncode(requestBody),
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResp = jsonDecode(response.body);
-        if (jsonResp["status"] == "success") {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Review updated successfully!")),
-          );
-          Navigator.pop(context, true); // Mengembalikan nilai true untuk refresh
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: ${jsonResp["status"]}")),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Unknown error: ${response.statusCode}")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Exception: $e")),
-      );
-    }
+    _reviewTextController = TextEditingController(text: widget.initialReviewText);
+    _ratingController = TextEditingController(text: widget.initialRating.toString());
   }
 
   @override
@@ -83,60 +40,142 @@ class _EditReviewPageState extends State<EditReviewPage> {
     super.dispose();
   }
 
+  /// Fungsi untuk mengirimkan perubahan ke backend
+  Future<void> _submitEdit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final request = context.read<CookieRequest>();
+
+      final response = await request.postJson(
+        'https://southfeast-production.up.railway.app/review/createreview/${widget.reviewId}/',
+        jsonEncode({
+          'review_text': _reviewTextController.text.trim(),
+          'rating': double.parse(_ratingController.text.trim()),
+        }),
+      );
+
+      if (response['status'] == 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Review updated successfully!')),
+        );
+        Navigator.pop(context, true); // Kembali dengan status berhasil
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${response['status']}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Review"),
+        title: const Text('Edit Review'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Review Text
+              const Center(
+                child: Text(
+                  'Edit Your Review',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Form Edit Review Text
               TextFormField(
                 controller: _reviewTextController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: "Review Text",
-                  border: OutlineInputBorder(),
+                maxLines: 4,
+                decoration: InputDecoration(
+                  labelText: 'Edit Your Review',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return "Review text is required";
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your review';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
 
-              // Rating
+              // Form Edit Rating
               TextFormField(
                 controller: _ratingController,
-                decoration: const InputDecoration(
-                  labelText: "Rating (1-5)",
-                  border: OutlineInputBorder(),
-                ),
                 keyboardType: TextInputType.number,
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return "Rating is required";
+                decoration: InputDecoration(
+                  labelText: 'Rating (1-5)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a rating';
                   }
-                  final rating = double.tryParse(val);
+                  final rating = double.tryParse(value);
                   if (rating == null || rating < 1 || rating > 5) {
-                    return "Rating must be between 1 and 5";
+                    return 'Rating must be between 1 and 5';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              // Submit Button
-              ElevatedButton(
-                onPressed: _submitEdit,
-                child: const Text("Save Changes"),
+              // Tombol Save Changes
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitEdit,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Save Changes'),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Tombol Cancel
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
               ),
             ],
           ),

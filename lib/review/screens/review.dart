@@ -53,24 +53,19 @@ class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateM
 
       // URL dengan parameter pencarian dan filter
       final url = Uri.parse(
-        'https://southfeast-production.up.railway.app/review/json/'
-        '?search=${Uri.encodeComponent(query)}&my_reviews=${myReviews.toString()}',
+        'https://southfeast-production.up.railway.app/review/json/?search=$query&my_reviews=$myReviews',
       ).toString();
 
       // Permintaan GET dengan cookie
       final response = await request.get(url);
 
-      // Periksa status HTTP
-      if (response['status'] == 200) { // Periksa status sebagai integer
-        // Konversi data JSON menjadi objek ReviewEntry
-        final List<dynamic> reviewData = response['data'];
-        return reviewData.map((e) => ReviewEntry.fromJson(e)).toList();
+      // Periksa status respons
+      if (response['status'] == 'success') {
+        return reviewEntryFromJson(jsonEncode(response['data']));
       } else {
         throw Exception('Failed to load reviews: ${response['message']}');
       }
     } catch (e) {
-      // Log kesalahan dan lempar ulang untuk ditangani di FutureBuilder
-      debugPrint('Error fetching reviews: $e');
       rethrow;
     }
   }

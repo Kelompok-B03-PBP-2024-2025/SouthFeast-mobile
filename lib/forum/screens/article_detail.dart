@@ -50,8 +50,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get(
-        // 'https://southfeast-production.up.railway.app/forum/json/article/',
-        'http://127.0.0.1:8000/forum/json/article/',
+        'https://southfeast-production.up.railway.app/forum/json/article/',
       );
       print('Response: $response'); // Debugging
     } catch (e) {
@@ -182,7 +181,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     try {
       // Kirim data sebagai form-encoded (Map<String, String>)
       final response = await request.post(
-        'http://127.0.0.1:8000/forum/api/comment/delete/${comment.id}/',
+        'https://southfeast-production.up.railway.app/forum/api/comment/delete/${comment.id}/',
         {
           'action': 'delete', // Backend membutuhkan key 'action' dengan value 'delete'
         },
@@ -250,7 +249,7 @@ Future<void> _deleteArticle() async {
       print("[DEBUG] Attempting to delete article ${widget.article.pk}");
       
       final response = await request.postJson(
-        'http://127.0.0.1:8000/forum/api/article/delete/${widget.article.pk}/',
+        'https://southfeast-production.up.railway.app/forum/api/article/delete/${widget.article.pk}/',
         jsonEncode({
           '_method': 'DELETE',
         }),

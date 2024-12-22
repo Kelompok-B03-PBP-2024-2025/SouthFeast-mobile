@@ -471,7 +471,7 @@ class ReviewCard extends StatelessWidget {
     if (confirm == true) {
       try {
         final response = await request.get(
-          'http://10.0.2.2:8000/dashboard/delete-review-flutter/${review.id}/',
+          'https://southfeast-production.up.railway.app/dashboard/delete-review-flutter/${review.id}/',
         );
 
         if (response['status'] == 'success') {

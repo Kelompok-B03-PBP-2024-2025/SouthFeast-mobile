@@ -28,12 +28,18 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
           Scaffold.of(context).openDrawer();
         },
       ),
-      title: const Center(
-        child: Text(
-          'SouthFeast',
-          style: TextStyle(color: Colors.white),
+      title: Center(
+        child: Image.network(
+          'https://southfeast-production.up.railway.app/static/image/logo.png', // Ganti dengan URL gambar yang sesuai
+          width: 230, // Sesuaikan ukuran gambar
+          height: 60, // Sesuaikan ukuran gambar
+          color: Colors.white,
         ),
       ),
+      // child: Text(
+      //   'SouthFeast',
+      //   style: TextStyle(color: Colors.white),
+      // ),
       backgroundColor: Colors.black,
       actions: [
         IconButton(
@@ -44,23 +50,24 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () async {
             if (isAuthenticated) {
               try {
-                // final response = await request
-                //     .logout("http://10.0.2.2:8000/auth/api/logout/");
-                // String message = response["message"];
                 final response = await request.logout(
-                    "https://southfeast-production.up.railway.app/auth/api/logout/");
+                  "https://southfeast-production.up.railway.app/auth/api/logout/",
+                );
                 String message = response["message"];
                 if (context.mounted) {
                   if (response['status']) {
                     String uname = response["username"];
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text("$message Sampai jumpa, $uname."),
-                    ));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("$message Sampai jumpa, $uname."),
+                      ),
+                    );
                     onAuthStateChanged();
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const LoginPage()),
+                        builder: (context) => const LoginPage(),
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

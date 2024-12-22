@@ -32,7 +32,7 @@ class MenuConfig {
         {
           "title": "Review",
           "icon": Icons.rate_review,
-          "screen":  ReviewPage(),
+          "screen":  ReviewPage(isStaff: isStaff, isAuthenticated: isAuthenticated,),
           "requiresAuth": false,
         },
         {
@@ -78,7 +78,7 @@ class MenuConfig {
         {
           "title": "Review",
           "icon": Icons.rate_review,
-          "screen":  ReviewPage(),
+          "screen":  ReviewPage(isStaff: isStaff,isAuthenticated: isAuthenticated,),
           "requiresAuth": false,
         },
       ];

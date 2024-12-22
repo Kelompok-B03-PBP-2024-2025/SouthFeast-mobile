@@ -17,104 +17,112 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 200, // Batasi lebar kartu
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0), // Kurangi padding
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                review.user,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14, // Kurangi ukuran font
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      margin: const EdgeInsets.all(8.0), // Menambahkan margin untuk jarak antar kartu
+      child: Padding(
+        padding: const EdgeInsets.all(12.0), // Mengatur padding sesuai kebutuhan
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Nama Pengguna
+            Text(
+              review.user,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            // Nama Menu Item
+            Text(
+              review.menuItem,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              // Menghapus pembatasan jumlah baris agar teks dapat menyesuaikan
+              // overflow: TextOverflow.ellipsis,
+              // maxLines: 1,
+            ),
+            const SizedBox(height: 4),
+            // Teks Ulasan
+            Text(
+              review.reviewText,
+              // Mengizinkan teks ulasan untuk memiliki banyak baris sesuai konten
+              // maxLines: null,
+              // overflow: TextOverflow.visible,
+              style: const TextStyle(color: Colors.black87, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            // Rating
+            Text(
+              'Rating: ${review.rating}/5',
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Tanggal Posting
+            Text(
+              'Posted on: ${review.createdAt.toString().substring(0, 10)}',
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+            const SizedBox(height: 8),
+            // Tombol Aksi
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Tombol "View More"
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailReviewPage(
+                          review: review,
+                          isStaff: isStaff,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'View More',
+                    style: TextStyle(color: Colors.blue, fontSize: 12),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4), // Kurangi jarak antar elemen
-              Text(
-                review.menuItem,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1, // Batasi jumlah baris
-              ),
-              const SizedBox(height: 4),
-              Text(
-                review.reviewText,
-                maxLines: 2, // Batasi jumlah baris teks ulasan
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.black87, fontSize: 12),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Rating: ${review.rating}/5',
-                style: const TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Posted on: ${review.createdAt.toString().substring(0, 10)}',
-                style: const TextStyle(color: Colors.grey, fontSize: 10),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
+                // Tombol "Edit" (jika diizinkan)
+                if (showEditButton)
+                  ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DetailReviewPage(
-                            review: review,
-                            isStaff: isStaff,
+                          builder: (context) => EditReviewPage(
+                            reviewId: review.id,
+                            initialReviewText: review.reviewText,
+                            initialRating: review.rating,
                           ),
                         ),
                       );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
                     child: const Text(
-                      'View More',
-                      style: TextStyle(color: Colors.blue, fontSize: 12),
+                      'Edit',
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
-                  if (showEditButton)
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditReviewPage(
-                              reviewId: review.id,
-                              initialReviewText: review.reviewText,
-                              initialRating: review.rating,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      ),
-                      child: const Text(
-                        'Edit',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

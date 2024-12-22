@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:southfeast_mobile/authentication/screens/login.dart';
 import 'package:southfeast_mobile/review/models/review_entry.dart';
 import 'package:southfeast_mobile/review/widget/review_card.dart'; // Pastikan path benar
 
@@ -13,8 +14,8 @@ class ReviewPage extends StatefulWidget {
 
   const ReviewPage({
     super.key,
-    this.isStaff = false,
-    this.isAuthenticated = false,
+    required this.isStaff,
+    required this.isAuthenticated,
     this.username,
   });
 
@@ -48,27 +49,34 @@ class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateM
       throw Exception('Error fetching reviews: $e');
     }
   }
-
-  @override
+    @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _reviewsFuture = fetchReviews();
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
-        setState(() {
-          if (_tabController.index == 0) {
-            // All Reviews
-            _reviewsFuture = fetchReviews();
-          } else if (_tabController.index == 1) {
-            // My Reviews
-            _reviewsFuture = fetchReviews(myReviews: true);
-          }
-        });
+        if (_tabController.index == 1 && !widget.isAuthenticated) {
+          // If trying to access My Reviews while not authenticated
+          _tabController.animateTo(0); // Reset to All Reviews tab
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        } else {
+          // Update reviews based on selected tab
+          setState(() {
+            _reviewsFuture = fetchReviews(
+              myReviews: _tabController.index == 1,
+              query: _searchController.text,
+            );
+          });
+        }
       }
     });
   }
 
+  
   void _onSearch() {
     setState(() {
       final isMyReviews = _tabController.index == 1;

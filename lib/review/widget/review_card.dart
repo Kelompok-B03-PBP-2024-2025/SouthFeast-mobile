@@ -1,17 +1,18 @@
-// lib/widgets/review_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:southfeast_mobile/review/models/review_entry.dart';
-import 'package:southfeast_mobile/review/screens/detail_review.dart';
+import 'package:southfeast_mobile/review/screens/edit_review.dart'; // Import halaman edit
+import 'package:southfeast_mobile/review/screens/detail_review.dart'; // Import halaman detail
 
 class ReviewCard extends StatelessWidget {
   final ReviewEntry review;
   final bool isStaff;
+  final bool showEditButton;
 
   const ReviewCard({
     super.key,
     required this.review,
     this.isStaff = false,
+    this.showEditButton = false,
   });
 
   @override
@@ -29,7 +30,6 @@ class ReviewCard extends StatelessWidget {
                 ? Image.network(
                     review.reviewImage!,
                     fit: BoxFit.cover,
-                    // Jika gambar error, gunakan fallback
                     errorBuilder: (context, error, stackTrace) {
                       return Image.network(
                         'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
@@ -42,13 +42,11 @@ class ReviewCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
           ),
-          // Konten
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Baris: user + rating
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -69,7 +67,6 @@ class ReviewCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Menu item
                 Text(
                   review.menuItem,
                   style: const TextStyle(
@@ -79,7 +76,6 @@ class ReviewCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // Review text (truncated)
                 Text(
                   review.reviewText,
                   maxLines: 3,
@@ -87,19 +83,17 @@ class ReviewCard extends StatelessWidget {
                   style: const TextStyle(color: Colors.black87),
                 ),
                 const SizedBox(height: 8),
-                // Tanggal
                 Text(
                   'Posted on: ${review.createdAt.toString().substring(0, 10)}',
                   style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
-                // Tombol "View More"
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () {
-                        // Tampilkan detail review
+                        // Navigasi ke halaman detail review
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -115,6 +109,25 @@ class ReviewCard extends StatelessWidget {
                         style: TextStyle(color: Colors.blue),
                       ),
                     ),
+                    if (showEditButton)
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditReviewPage(
+                                reviewId: review.id, // ID ulasan
+                                initialReviewText: review.reviewText, // Teks ulasan awal
+                                initialRating: review.rating, // Rating awal
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                        ),
+                        child: const Text('Edit Review'),
+                      ),
                   ],
                 ),
               ],

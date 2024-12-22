@@ -42,7 +42,8 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
-        backgroundColor: Colors.black,  // Menyesuaikan warna app bar dengan desain
+        backgroundColor: Colors.black,
+        iconTheme: IconThemeData(color: Colors.white),  // Menyesuaikan warna app bar dengan desain
       ),
       body: Center(
         child: SingleChildScrollView(

@@ -60,7 +60,7 @@ class _DetailMakananState extends State<DetailMakanan> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get(
-        'http://10.0.2.2:8000/dashboard/get-reviews-flutter/${currentResult.id}/',
+        'https://southfeast-production.up.railway.app/dashboard/get-reviews-flutter/${currentResult.id}/',
       );
 
       if (response != null) {
@@ -163,7 +163,7 @@ class _DetailMakananState extends State<DetailMakanan> {
 
     if (confirm == true && context.mounted) {
       final response = await request.get(
-        'http://10.0.2.2:8000/dashboard/delete-makanan-flutter/${currentResult.id}/',
+        'https://southfeast-production.up.railway.app/dashboard/delete-makanan-flutter/${currentResult.id}/',
       );
       if (response['status'] == 'success') {
         if (widget.onUpdate != null) {

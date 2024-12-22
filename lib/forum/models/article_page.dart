@@ -4,9 +4,11 @@
 
 import 'dart:convert';
 
-List<ArticlePage> articlePageFromJson(String str) => List<ArticlePage>.from(json.decode(str).map((x) => ArticlePage.fromJson(x)));
+List<ArticlePage> articlePageFromJson(String str) => 
+    List<ArticlePage>.from(json.decode(str).map((x) => ArticlePage.fromJson(x)));
 
-String articlePageToJson(List<ArticlePage> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String articlePageToJson(List<ArticlePage> data) => 
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class ArticlePage {
     String model;
@@ -35,11 +37,12 @@ class ArticlePage {
 class Fields {
     String title;
     String content;
-    String? thumbnailFile;  
+    String? thumbnailFile;
     String author;
     DateTime createdAt;
     List<Comment> comments;
     bool canEdit;
+    bool isStaff;  // Menambahkan field isStaff
 
     Fields({
         required this.title,
@@ -49,6 +52,7 @@ class Fields {
         required this.createdAt,
         required this.comments,
         required this.canEdit,
+        required this.isStaff,  // Menambahkan ke constructor
     });
 
     factory Fields.fromJson(Map<String, dynamic> json) => Fields(
@@ -59,6 +63,7 @@ class Fields {
         createdAt: DateTime.parse(json["created_at"]),
         comments: List<Comment>.from(json["comments"].map((x) => Comment.fromJson(x))),
         canEdit: json["can_edit"],
+        isStaff: json["is_staff"] ?? false,  // Mengambil dari JSON, default false jika tidak ada
     );
 
     Map<String, dynamic> toJson() => {
@@ -69,6 +74,7 @@ class Fields {
         "created_at": createdAt.toIso8601String(),
         "comments": List<dynamic>.from(comments.map((x) => x.toJson())),
         "can_edit": canEdit,
+        "is_staff": isStaff,  // Menambahkan ke JSON output
     };
 }
 
@@ -77,12 +83,14 @@ class Comment {
     String content;
     String author;
     DateTime createdAt;
+    bool isStaff;  // Menambahkan field isStaff untuk comment
 
     Comment({
         required this.id,
         required this.content,
         required this.author,
         required this.createdAt,
+        required this.isStaff,  // Menambahkan ke constructor
     });
 
     factory Comment.fromJson(Map<String, dynamic> json) => Comment(
@@ -90,6 +98,7 @@ class Comment {
         content: json["content"],
         author: json["author"],
         createdAt: _parseDateTime(json["created_at"]),
+        isStaff: json["is_staff"] ?? false,  // Mengambil dari JSON, default false jika tidak ada
     );
 
     static DateTime _parseDateTime(dynamic date) {
@@ -97,12 +106,10 @@ class Comment {
         
         try {
             if (date is String) {
-                // Try parsing ISO format first
                 return DateTime.parse(date);
             }
             throw const FormatException('Invalid date format');
         } catch (e) {
-            // If parsing fails, return current time as fallback
             return DateTime.now();
         }
     }
@@ -112,6 +119,7 @@ class Comment {
         "content": content,
         "author": author,
         "created_at": createdAt.toIso8601String(),
+        "is_staff": isStaff,  // Menambahkan ke JSON output
     };
 }
 

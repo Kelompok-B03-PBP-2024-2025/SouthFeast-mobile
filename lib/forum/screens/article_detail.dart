@@ -52,7 +52,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       final response = await request.get(
         'https://southfeast-production.up.railway.app/forum/json/article/',
       );
-      print('Response: $response'); // Debugging
     } catch (e) {
       print('Error: $e'); // Debugging
     }
@@ -66,7 +65,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         articleId: widget.article.pk,
         initialTitle: widget.article.fields.title,
         initialContent: widget.article.fields.content,
-        // initialThumbnail: widget.article.fields.thumbnailFile,
       ),
     ),
   );
@@ -76,7 +74,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     setState(() {
       widget.article.fields.title = result['title'];
       widget.article.fields.content = result['content'];
-      widget.article.fields.thumbnailFile = result['thumbnail'];
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +85,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       'pk': widget.article.pk,
       'title': result['title'],
       'content': result['content'],
-      'thumbnail': result['thumbnail'],
     });
   }
  }
@@ -126,6 +122,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
           content: commentData['content'],
           author: commentData['author'],
           createdAt: parsedDate,
+          isStaff: commentData['is_staff'],
         );
 
         setState(() {
@@ -143,7 +140,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response['message'] ?? 'Failed to post comment'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.black,
           ),
         );
       }
@@ -151,7 +148,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
     }
@@ -170,7 +167,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          style: TextButton.styleFrom(foregroundColor: Colors.black),
           child: const Text('Delete'),
         ),
       ],
@@ -204,7 +201,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response['message'] ?? 'Failed to delete comment'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.black,
           ),
         );
       }
@@ -214,7 +211,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
     }
@@ -223,22 +220,16 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
 Future<void> _deleteArticle() async {
     final request = context.read<CookieRequest>();
-    
-    // Debug authentication status
-    print("[DEBUG] Starting delete operation...");
-    print("[DEBUG] Login status: ${request.loggedIn}");
-    print("[DEBUG] Headers: ${request.headers}");
-    
+
     // Check authentication first
     final isAuth = await isAuthenticated();
-    print("[DEBUG] isAuthenticated result: $isAuth");
 
     if (!isAuth) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please login first'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
       Navigator.pushReplacementNamed(context, '/login');
@@ -246,21 +237,14 @@ Future<void> _deleteArticle() async {
     }
 
     try {
-      print("[DEBUG] Attempting to delete article ${widget.article.pk}");
       
-      final response = await request.postJson(
-        'https://southfeast-production.up.railway.app/forum/api/article/delete/${widget.article.pk}/',
-        jsonEncode({
-          '_method': 'DELETE',
-        }),
+      final response = await request.get(
+        'https://southfeast-production.up.railway.app/forum/api/article/delete-flutter/${widget.article.pk}/',
       );
-
-      print("[DEBUG] Delete response: $response");
 
       if (!mounted) return;
 
       if (response != null && response['success'] == true) {
-        print("[DEBUG] Delete successful, popping with article ID");
         
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -274,33 +258,31 @@ Future<void> _deleteArticle() async {
           'refresh': true,
         });
       } else {
-        print("[DEBUG] Delete failed: ${response?['message']}");
         
         if (response?['message']?.toLowerCase() == 'unauthorized') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('You are not authorized to delete this article'),
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.black,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(response?['message'] ?? 'Failed to delete article'),
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.black,
             ),
           );
         }
       }
     } catch (e) {
-      print("[DEBUG] Error during deletion: $e");
       
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
     }
@@ -310,9 +292,6 @@ Future<void> _deleteArticle() async {
  @override
   Widget build(BuildContext context) {
     final fields = widget.article.fields;
-  print("[DEBUG] Article author: ${fields.author}");
-  print("[DEBUG] Current user: olena"); // atau user yang sedang login
-  print("[DEBUG] canEdit value: ${fields.canEdit}");
     final comments = fields.comments;
     final request = context.watch<CookieRequest>();
 
@@ -327,7 +306,7 @@ Future<void> _deleteArticle() async {
           },
         ),
         actions: [
-          if (widget.article.fields.canEdit) ...[  // Only show edit/delete if user can edit
+          if (widget.article.fields.canEdit || widget.article.fields.isStaff) ...[  // Only show edit/delete if user can edit
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: _editArticle,
@@ -348,34 +327,6 @@ Future<void> _deleteArticle() async {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Thumbnail Image Section
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        fields.thumbnailFile != null && fields.thumbnailFile!.isNotEmpty
-                            ? (fields.thumbnailFile!.startsWith('http')
-                                ? fields.thumbnailFile!
-                                : 'https://southfeast-production.up.railway.app${fields.thumbnailFile}')
-                                : 'https://southfeast-production.up.railway.app/static/image/default-thumbnail.jpg', // URL Default
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Jika gagal memuat gambar
-                          return Container(
-                            height: 200,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Center(
-                              child: Icon(Icons.broken_image, size: 50),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
                     // Article Title
                     Text(
                       fixUtf8(fields.title),
@@ -497,7 +448,7 @@ Future<void> _deleteArticle() async {
                                       ),
                                     ),
                                     // Tambahkan tombol delete jika user adalah penulis komentar
-                                    if (widget.article.fields.canEdit)
+                                    if (widget.article.fields.canEdit || widget.article.fields.isStaff)
                                       IconButton(
                                         icon: const Icon(Icons.delete, size: 20),
                                         color: const Color.fromARGB(255, 23, 23, 23),

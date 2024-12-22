@@ -1,11 +1,14 @@
 [![Build status](https://build.appcenter.ms/v0.1/apps/2a5f4762-0278-48a4-a0fc-9ca86e798a88/branches/main/badge)](https://appcenter.ms)
-[![Build status](https://install.appcenter.ms/orgs/Kelompok-B03-PBP-2024-2025/apps/SouthFeast)
+
 # SouthFeasts
 
 # South Jakarta Flavors, SouthFeasts Delivers! 🍜🍖
 
 [https://southfeast-production.up.railway.app](https://southfeast-production.up.railway.app)
+
 ristek.link/punyasouthfeast
+
+https://install.appcenter.ms/orgs/Kelompok-B03-PBP-2024-2025/apps/SouthFeast
 
 ## Anggota Kelompok B03
 - [Gnade Yuka](https://github.com/yukaagnd) - 2306165704

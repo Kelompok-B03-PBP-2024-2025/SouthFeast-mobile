@@ -369,6 +369,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import '../models/article_page.dart';
 import 'article_detail.dart';
 import 'article_form.dart';
+import 'package:southfeast_mobile/authentication/screens/login.dart';
 
 class ArticleListPage extends StatefulWidget {
   const ArticleListPage({super.key});
@@ -432,7 +433,10 @@ class _ArticleListPageState extends State<ArticleListPage> {
     final request = context.read<CookieRequest>();
     if (!request.loggedIn) {
       // Jika belum login, arahkan ke halaman login
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
       return;
     }
 

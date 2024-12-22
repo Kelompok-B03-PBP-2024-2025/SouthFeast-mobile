@@ -560,8 +560,8 @@ class _ArticleFormPageState extends State<ArticleFormPage> {
 
     try {
       final url = widget.articleId == null
-          ? 'http://127.0.0.1:8000/forum/api/article/create/'
-          : 'http://127.0.0.1:8000/forum/api/article/edit/${widget.articleId}/';
+          ? 'https://southfeast-production.up.railway.app/forum/api/article/create/'
+          : 'https://southfeast-production.up.railway.app/forum/api/article/edit/${widget.articleId}/';
 
       final csrfToken = request.cookies['csrftoken'] ?? '';
       request.headers['X-CSRFToken'] = csrfToken.toString();

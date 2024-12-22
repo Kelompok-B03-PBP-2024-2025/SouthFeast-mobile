@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:southfeast_mobile/wishlist/screens/widgets/edit_collection_page.dart';
 import 'package:southfeast_mobile/wishlist/screens/wishlist_details.dart';
 import '../models/wishlist_collection.dart';
+import 'wishlist_details.dart'; 
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});

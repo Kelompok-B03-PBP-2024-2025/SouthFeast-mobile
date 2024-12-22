@@ -48,7 +48,7 @@ class DetailReviewPage extends StatelessWidget {
               // Product Preview Section (contoh, jika Anda punya data/URL gambar menu)
               // Misal di backend: review.menu_item.image
               // Kita pakai reviewImage atau "tidak ada" jika field menu punya data terpisah.
-              _buildProductPreviewSection(),
+              // _buildProductPreviewSection(),
 
               // Reviewer & Rating
               Padding(
@@ -149,73 +149,73 @@ class DetailReviewPage extends StatelessWidget {
     );
   }
 
-  /// Contoh section untuk meniru "Product Preview"
-  /// Anda mungkin punya detail menu item yang lebih lengkap.
-  /// Di sini kita buat statik/palsu saja.
-  Widget _buildProductPreviewSection() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          // Gambar produk (opsional)
-          // Silakan ganti dengan data asli "menu_item.image" jika ada
-          Container(
-            width: 80,
-            height: 80,
-            color: Colors.grey.shade300,
-            child: const Icon(
-              Icons.restaurant,
-              size: 40,
-              color: Colors.black54,
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Deskripsi produk
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  review.menuItem,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod.",
-                  style: TextStyle(fontSize: 14),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () {
-                    // Arahkan ke "Menu Details" jika ada halaman detail item
-                    // Navigator.push( ... );
-                  },
-                  child: const Text(
-                    "View Menu Details",
-                    style: TextStyle(
-                      color: Colors.pink,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // /// Contoh section untuk meniru "Product Preview"
+  // /// Anda mungkin punya detail menu item yang lebih lengkap.
+  // /// Di sini kita buat statik/palsu saja.
+  // Widget _buildProductPreviewSection() {
+  //   return Container(
+  //     margin: const EdgeInsets.only(bottom: 16),
+  //     padding: const EdgeInsets.all(8),
+  //     decoration: BoxDecoration(
+  //       color: Colors.grey.shade50,
+  //       border: Border.all(color: Colors.grey.shade300),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         // Gambar produk (opsional)
+  //         // Silakan ganti dengan data asli "menu_item.image" jika ada
+  //         Container(
+  //           width: 80,
+  //           height: 80,
+  //           color: Colors.grey.shade300,
+  //           child: const Icon(
+  //             Icons.restaurant,
+  //             size: 40,
+  //             color: Colors.black54,
+  //           ),
+  //         ),
+  //         const SizedBox(width: 12),
+  //         // Deskripsi produk
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 review.menuItem,
+  //                 style: const TextStyle(
+  //                   fontWeight: FontWeight.bold,
+  //                   fontSize: 16,
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 4),
+  //               const Text(
+  //                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod.",
+  //                 style: TextStyle(fontSize: 14),
+  //                 maxLines: 2,
+  //                 overflow: TextOverflow.ellipsis,
+  //               ),
+  //               const SizedBox(height: 8),
+  //               GestureDetector(
+  //                 onTap: () {
+  //                   // Arahkan ke "Menu Details" jika ada halaman detail item
+  //                   // Navigator.push( ... );
+  //                 },
+  //                 child: const Text(
+  //                   "View Menu Details",
+  //                   style: TextStyle(
+  //                     color: Colors.pink,
+  //                     decoration: TextDecoration.underline,
+  //                   ),
+  //                 ),
+  //               )
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   /// Dialog Konfirmasi Delete
   void _showDeleteConfirmation(BuildContext context) {

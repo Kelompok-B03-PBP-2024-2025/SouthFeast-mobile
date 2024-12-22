@@ -56,27 +56,28 @@ class _ArticleListPageState extends State<ArticleListPage> {
     }
   }
 
-  void _handleTabChange(String title) {
+  void _handleTabChange(String title) async {  // Tambah async
     final request = context.read<CookieRequest>();
+    
+    // Cek untuk Your Articles dan belum login
+    if (title == 'Your Articles' && !request.loggedIn) {
+      // Langsung navigasi ke login page
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;  // Keluar dari fungsi
+    }
+
+    // Jika sudah login atau memilih Public Articles
     setState(() {
       selectedTab = title;
       isLoading = true;
-      articles = []; // Pastikan artikel kosong saat tab berganti
+      articles = []; 
       error = null;
     });
 
-    // Jika tab "Your Articles" dipilih, periksa apakah user sudah login
-    if (title == 'Your Articles' && !request.loggedIn) {
-      // Jika belum login, kosongkan daftar artikel dan tampilkan error
-      setState(() {
-        isLoading = false;
-        articles = [];
-        error = 'Please log in to view your articles';
-      });
-    } else {
-      // Jika sudah login atau tab "Public Articles", fetch artikel
-      fetchArticles();
-    }
+    fetchArticles();
   }
 
   Future<void> _handleAddArticle() async {
@@ -121,7 +122,7 @@ class _ArticleListPageState extends State<ArticleListPage> {
                     'Public Articles',
                     style: TextStyle(
                       color: selectedTab == 'Public Articles'
-                          ? const Color(0xFF3B5FFF)
+                          ? const Color.fromARGB(255, 13, 72, 119)
                           : Colors.grey,
                       fontSize: 16,
                       fontWeight: selectedTab == 'Public Articles'
@@ -137,7 +138,7 @@ class _ArticleListPageState extends State<ArticleListPage> {
                     'Your Articles',
                     style: TextStyle(
                       color: selectedTab == 'Your Articles'
-                          ? const Color(0xFF3B5FFF)
+                          ? const Color.fromARGB(255, 13, 72, 119)
                           : Colors.grey,
                       fontSize: 16,
                       fontWeight: selectedTab == 'Your Articles'
@@ -152,7 +153,10 @@ class _ArticleListPageState extends State<ArticleListPage> {
           // Main Content
           Expanded(
             child: isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(
+              color: Colors.black, // Ganti warna loading indicator menjadi hitam
+              strokeWidth: 2,
+            ))
                 : _buildArticleList(),
           ),
         ],
@@ -170,7 +174,10 @@ class _ArticleListPageState extends State<ArticleListPage> {
 
   Widget _buildArticleList() {
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator(
+              color: Colors.black, // Ganti warna loading indicator menjadi hitam
+              strokeWidth: 2,
+            ));
     }
 
     if (articles.isEmpty && selectedTab == 'Your Articles') {
@@ -179,7 +186,7 @@ class _ArticleListPageState extends State<ArticleListPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Please log in to view your articles',
+              'no articles',
               style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 16),
             ),
           ],
@@ -207,12 +214,31 @@ class _ArticleListPageState extends State<ArticleListPage> {
           createdAt: article.fields.createdAt,
           content: article.fields.content,
           onTap: () async {
-            await Navigator.push(
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ArticleDetailPage(article: article),
+                builder: (context) => ArticleDetailPage(
+                  article: article,
+                  onUpdate: () => fetchArticles(),  // Tambahkan ini
+                ),
               ),
-            ).then((_) => fetchArticles());
+            );
+
+            // Handle result saat kembali dari detail page
+            if (result != null && mounted) {
+              if (result is Map && result['updated'] == true) {
+                // Update article di list dengan data baru
+                setState(() {
+                  final index = articles.indexWhere((a) => a.pk == article.pk);
+                  if (index != -1) {
+                    articles[index].fields.title = result['title'];
+                    articles[index].fields.content = result['content'];
+                  }
+                });
+              }
+              // Refresh articles list regardless
+              fetchArticles();
+            }
           },
         );
       },

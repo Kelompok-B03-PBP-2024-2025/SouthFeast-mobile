@@ -15,10 +15,12 @@ String fixUtf8(String text) {
 
 class QuestionDetailPage extends StatefulWidget {
   final Result question;
+  final Function? onUpdate; 
 
   const QuestionDetailPage({
     super.key,
     required this.question,
+    this.onUpdate,
   });
 
   @override
@@ -26,6 +28,7 @@ class QuestionDetailPage extends StatefulWidget {
 }
 
 class _QuestionDetailPageState extends State<QuestionDetailPage> {
+  late Result currentQuestion; 
   final _formKey = GlobalKey<FormState>();
   final _answerController = TextEditingController();
   bool isUpdated = false;
@@ -34,6 +37,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   void dispose() {
     _answerController.dispose();
     super.dispose();
+  }
+  
+  @override
+  void initState() {
+    super.initState();
+    currentQuestion = widget.question;  // Inisialisasi current question
   }
 
   Future<void> _deleteQuestion(CookieRequest request) async {
@@ -231,34 +240,31 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
   }
 
     @override
-  Widget build(BuildContext context) {
-    final request = context.watch<CookieRequest>();
+    Widget build(BuildContext context) {
+      final request = context.watch<CookieRequest>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Question Detail'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            // Navigator.pop(context, isUpdated); // Kirim status perubahan ke halaman sebelumnya
-            Navigator.pop(context, {
-              'updated': isUpdated,
-              'deleted': false, // False karena ini bukan penghapusan
-              'question': widget.question,
-            });
-          },
-        ),
-        actions: [
-          if (widget.question.fields.canEdit || widget.question.fields.isStaff) ...[
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Question Detail'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context, {
+                'updated': isUpdated,
+                'deleted': false,
+                'question': currentQuestion,
+              });
+            },
+          ),
+          actions: [
+          if (currentQuestion.fields.canEdit || currentQuestion.fields.isStaff) ...[
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () async {
-                final navigator = Navigator.of(context);
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-                final result = await navigator.push(
+                // Perbaiki pemanggilan Navigator
+                final result = await Navigator.of(context).push(  // Tambahkan of(context)
                   MaterialPageRoute(
-                    builder: (context) => QuestionFormPage(question: widget.question),
+                    builder: (context) => QuestionFormPage(question: currentQuestion),
                   ),
                 );
 
@@ -266,11 +272,17 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
 
                 if (result != null && result is Map<String, dynamic>) {
                   setState(() {
-                    widget.question.fields.title = result['title'] ?? widget.question.fields.title;
-                    widget.question.fields.question = result['question'] ?? widget.question.fields.question;
+                    currentQuestion.fields.title = result['title'] ?? currentQuestion.fields.title;
+                    currentQuestion.fields.question = result['question'] ?? currentQuestion.fields.question;
+                    isUpdated = true;
                   });
 
-                  scaffoldMessenger.showSnackBar(
+                  // Panggil callback onUpdate jika ada
+                  if (widget.onUpdate != null) {
+                    widget.onUpdate!();
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Question updated successfully')),
                   );
                 }
@@ -294,7 +306,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      fixUtf8(widget.question.fields.title),
+                      fixUtf8(currentQuestion.fields.title),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -307,7 +319,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         Icon(Icons.person_outline, size: 16, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
-                          fixUtf8(widget.question.fields.author),
+                          fixUtf8(currentQuestion.fields.author),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -332,7 +344,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        fixUtf8(widget.question.fields.question),
+                        fixUtf8(currentQuestion.fields.question),
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
@@ -349,7 +361,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '(${widget.question.fields.answerCount})',
+                          '(${currentQuestion.fields.answerCount})',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[600],
@@ -365,11 +377,9 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
                       ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: widget.question.fields.answers.length,
+                      itemCount: currentQuestion.fields.answers.length,
                       itemBuilder: (context, index) {
-                        final answer = widget.question.fields.answers[index];
-                        print("Can edit: ${answer.fields.canEdit}"); // Debug print
-                        print("Is staff: ${answer.fields.isStaff}"); // Debug print
+                        final answer = currentQuestion.fields.answers[index];
                           return Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             padding: const EdgeInsets.all(16),

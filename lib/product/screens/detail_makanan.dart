@@ -304,12 +304,11 @@ class InfoRow extends StatelessWidget {
     );
   }
 }
-
 class ReviewCard extends StatelessWidget {
   final ReviewEntry review;
 
   const ReviewCard({
-    Key? key, 
+    Key? key,
     required this.review,
   }) : super(key: key);
 
@@ -354,26 +353,6 @@ class ReviewCard extends StatelessWidget {
               review.createdAt.toString().substring(0, 10),
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
-            if (review.reviewImage != null) ...[
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  review.reviewImage!,
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.network(
-                      'https://southfeast-production.up.railway.app/static/image/default-review.jpg',
-                      height: 150,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
-              ),
-            ],
           ],
         ),
       ),

@@ -79,29 +79,29 @@ class DetailReviewPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 15, height: 1.4),
               ),
 
-              // Review Image (jika ada)
-              if (review.reviewImage != null) ...[
-                const SizedBox(height: 16),
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      review.reviewImage!,
-                      fit: BoxFit.cover,
-                      // Batasi ukuran gambar
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          height: 200,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported, size: 50),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+              // // Review Image (jika ada)
+              // if (review.reviewImage != null) ...[
+              //   const SizedBox(height: 16),
+              //   Center(
+              //     child: ClipRRect(
+              //       borderRadius: BorderRadius.circular(8.0),
+              //       child: Image.network(
+              //         review.reviewImage!,
+              //         fit: BoxFit.cover,
+              //         // Batasi ukuran gambar
+              //         width: MediaQuery.of(context).size.width * 0.7,
+              //         errorBuilder: (context, error, stackTrace) {
+              //           return Container(
+              //             width: MediaQuery.of(context).size.width * 0.7,
+              //             height: 200,
+              //             color: Colors.grey[300],
+              //             child: const Icon(Icons.image_not_supported, size: 50),
+              //           );
+              //         },
+              //       ),
+              //     ),
+              //   ),
+              // ],
 
               // Tombol Delete (jika staff = true)
               if (isStaff) ...[

@@ -72,9 +72,7 @@ class _WishlistPageState extends State<WishlistPage> {
         SnackBar(content: Text('Collection "$name" created successfully')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to create collection: $e')),
-      );
+      print(e);
     }
   }
 

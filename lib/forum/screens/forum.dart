@@ -34,10 +34,9 @@ class _ForumPageState extends State<ForumPage> {
                       const Text(
                         'Culinary Insight',
                         style: TextStyle(
-                          fontSize: 36,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          fontFamily: 'Cursive',
                         ),
                       ),
                       const SizedBox(height: 8),

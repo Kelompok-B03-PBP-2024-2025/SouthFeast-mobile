@@ -3,6 +3,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:southfeast_mobile/authentication/screens/login.dart';
+import 'dart:convert';  // Add this import at the top
 
 class ReservationCreateScreen extends StatefulWidget {
   final String restaurantName;
@@ -71,16 +72,14 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
         return;
       }
 
-      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-      final timeStr = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
-
-      final response = await request.post(
-        'http://southfeast-production.up.railway.app/restaurant/create-reservation/${widget.restaurantId}/',
-        {
-          'date': dateStr,
-          'time': timeStr,
-          'number_of_people': _numberOfPeople.toString(),
-        },
+      final response = await request.postJson(
+        'https://southfeast-production.up.railway.app/restaurant/api/reservations/create/',
+        jsonEncode({
+          'restaurant_id': widget.restaurantId,
+          'reservation_date': DateFormat('yyyy-MM-dd').format(_selectedDate!),
+          'reservation_time': '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
+          'number_of_people': _numberOfPeople,
+        }),
       );
 
       if (mounted) {
@@ -91,12 +90,13 @@ class _ReservationCreateScreenState extends State<ReservationCreateScreen> {
           Navigator.pop(context, true);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'] ?? 'Failed to create reservation')),
+            SnackBar(content: Text(response['error'] ?? 'Failed to create reservation')),
           );
         }
       }
     } catch (e) {
       if (mounted) {
+        print('Error creating reservation: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error creating reservation: $e')),
         );

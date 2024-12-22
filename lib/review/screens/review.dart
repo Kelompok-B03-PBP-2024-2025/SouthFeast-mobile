@@ -242,19 +242,17 @@ class _ReviewPageState extends State<ReviewPage> with SingleTickerProviderStateM
           itemCount: reviews.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 8, // Adjust spacing between rows
-            crossAxisSpacing: 8, // Adjust spacing between columns
-            childAspectRatio: 0.9, // Adjust aspect ratio for smaller cards
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            mainAxisExtent: 220, // Set fixed height for each card
+            childAspectRatio: 1, // This will be ignored when using mainAxisExtent
           ),
           itemBuilder: (context, index) {
             final review = reviews[index];
-            return SizedBox(
-              height: 150, // Adjust card height
-              child: ReviewCard(
-                review: review,
-                isStaff: widget.isStaff,
-                showEditButton: _tabController.index == 1, // Show edit button in My Reviews tab
-              ),
+            return ReviewCard(
+              review: review,
+              isStaff: widget.isStaff,
+              showEditButton: _tabController.index == 1,
             );
           },
         );

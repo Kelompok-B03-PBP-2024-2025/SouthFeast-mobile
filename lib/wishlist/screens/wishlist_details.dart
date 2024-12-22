@@ -26,8 +26,38 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
   }
 
   Future<Map<String, dynamic>> fetchCollectionDetail(int id) async {
-    final request = context.read<CookieRequest>();
-    // final url = 'http://127.0.0.1:8000/wishlist/flutter/collections/$id/';
+  final request = context.read<CookieRequest>();
+  
+  try {
+    // Jika id = 0, ini adalah My Wishlist yang akan menampilkan semua item
+    if (id == 0) {
+      // Fetch semua collection terlebih dahulu
+      final allCollectionsUrl = 'https://southfeast-production.up.railway.app/wishlist/flutter/collections';
+      final allCollectionsResponse = await request.get(allCollectionsUrl);
+
+      if (allCollectionsResponse == null) {
+        throw Exception('Failed to fetch collections');
+      }
+
+      // Kumpulkan semua items dari semua collection
+      List<dynamic> allItems = [];
+      for (var collection in allCollectionsResponse) {
+        if (collection['items'] != null) {
+          allItems.addAll(collection['items']);
+        }
+      }
+
+      // Return format yang sama tapi dengan semua items
+      return {
+        'id': 0,
+        'name': 'My Wishlist',
+        'description': 'All your wishlisted items',
+        'is_default': true,
+        'items': allItems,
+      };
+    }
+
+    // Untuk collection lain, gunakan endpoint normal
     final url = 'https://southfeast-production.up.railway.app/wishlist/flutter/collections/$id/';
     final response = await request.get(url);
 
@@ -36,7 +66,10 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
     }
 
     return response;
+  } catch (e) {
+    throw Exception('Failed to load collection detail: $e');
   }
+}
 
   Future<void> removeItemFromCollection(int itemId) async {
     try {
@@ -371,20 +404,23 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
               appBar: AppBar(
                 title: Text(collectionName),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showEditCollectionDialog(data['name'], data['description']);
-                    },
-                    tooltip: 'Edit Collection',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      confirmDeleteCollection(widget.collectionId);
-                    },
-                    tooltip: 'Delete Collection',
-                  ),
+                  // Only show edit and delete buttons if not default collection
+                  if (!isDefault) ...[  // Using spread operator with conditional
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showEditCollectionDialog(data['name'], data['description']);
+                      },
+                      tooltip: 'Edit Collection',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        confirmDeleteCollection(widget.collectionId);
+                      },
+                      tooltip: 'Delete Collection',
+                    ),
+                  ],
                 ],
               ),
               body: ListView(
@@ -400,12 +436,31 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 16),
-
                   const Text(
                     'Items in this collection:',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
+                  if (items.isEmpty)
+                    Center(
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.list_alt,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No items in this collection',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   for (var item in items) ...[
                     Card(
                       child: ListTile(
@@ -421,6 +476,37 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                             : const Icon(Icons.image_not_supported),
                         title: Text(item['menu_item']['name'] ?? 'No name'),
                         subtitle: Text('Price: ${item['menu_item']['price']}'),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) async {
+                            if (value == 'remove') {
+                              await removeItemFromCollection(item['id']);
+                            } else if (value == 'move') {
+                              showMoveDialog(item['id'], item['menu_item']['name']);
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'move',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.drive_file_move_outlined),
+                                  SizedBox(width: 8),
+                                  Text('Move'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'remove',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline),
+                                  SizedBox(width: 8),
+                                  Text('Remove'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                         onTap: () {
                           // Convert menu item to Result and navigate
                           final result = _convertMenuItemToResult(item['menu_item']);
@@ -429,11 +515,11 @@ class _CollectionDetailPageState extends State<CollectionDetailPage> {
                             MaterialPageRoute(
                               builder: (context) => DetailMakanan(
                                 result: result,
-                                isAuthenticated: true, // Since user is already authenticated
-                                isStaff: false, // Set based on your user role logic
+                                isAuthenticated: true,
+                                isStaff: false,
                               ),
                             ),
-                          ); // Closed the missing parenthesis
+                          );
                         },
                       ),
                     ),

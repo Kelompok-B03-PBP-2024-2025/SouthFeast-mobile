@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:southfeast_mobile/dashboard/widgets/search_filter_bar.dart';
-import 'package:southfeast_mobile/reservation/screens/reservation_viewall.dart';
 import 'package:southfeast_mobile/restaurant/models/restaurant/restaurant.dart';
 import 'package:southfeast_mobile/restaurant/services/restaurant_service.dart';
-import 'package:southfeast_mobile/restaurant/widgets/restaurant_filter_bar.dart';
-import 'package:southfeast_mobile/restaurant/widgets/restaurant_grid.dart';
-import 'package:southfeast_mobile/reservation/screens/reservation_detail.dart';
+import 'package:southfeast_mobile/dashboard/widgets/restaurant_list.dart';
+import 'package:southfeast_mobile/dashboard/widgets/restaurant_filter_bar.dart';
 
 class RestaurantPage extends StatefulWidget {
+  const RestaurantPage({Key? key}) : super(key: key);
+
   @override
   _RestaurantPageState createState() => _RestaurantPageState();
 }
 
-class _RestaurantPageState extends State<RestaurantPage> {
+class _RestaurantPageState extends State<RestaurantPage> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   List<RestaurantElement> _restaurants = [];
@@ -26,10 +26,13 @@ class _RestaurantPageState extends State<RestaurantPage> {
   int _totalPages = 1;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _fetchRestaurants();
+    Future.microtask(() => _fetchRestaurants());
   }
 
   void _onScroll() {
@@ -49,7 +52,6 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
     try {
       final request = context.read<CookieRequest>();
-      print('Fetching restaurants - Page: $page, Search: ${_searchController.text}, Kecamatan: $_selectedKecamatan}');
       
       final restaurantData = await RestaurantService.fetchRestaurants(
         request,
@@ -58,20 +60,22 @@ class _RestaurantPageState extends State<RestaurantPage> {
         page: page,
       );
 
-      print('Received ${restaurantData.restaurants.length} restaurants'); // Debug print
-
-      setState(() {
-        if (page == 1) {
-          _restaurants = restaurantData.restaurants;
-          _kecamatans = ['all', ...restaurantData.kecamatans];
-        } else {
-          _restaurants.addAll(restaurantData.restaurants);
-        }
-        _currentPage = restaurantData.currentPage;
-        _hasNext = restaurantData.hasNext;
-        _totalPages = restaurantData.totalPages;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          // Only clear the list if we're fetching page 1
+          if (page == 1) {
+            _restaurants = restaurantData.restaurants;
+            _kecamatans = ['all', ...restaurantData.kecamatans];
+          } else {
+            // For subsequent pages, append to existing list
+            _restaurants.addAll(restaurantData.restaurants);
+          }
+          _currentPage = restaurantData.currentPage;
+          _hasNext = restaurantData.hasNext;
+          _totalPages = restaurantData.totalPages;
+          _isLoading = false;
+        });
+      }
       
     } catch (e) {
       print('Error in _fetchRestaurants: $e'); // Debug print for errors
@@ -85,12 +89,18 @@ class _RestaurantPageState extends State<RestaurantPage> {
   }
 
   Future<void> _refreshData() async {
-    setState(() {
-      _currentPage = 1;
-      _restaurants.clear();
-      _isLoading = true;  // Add loading state
-    });
-    await _fetchRestaurants();
+    if (!mounted) return;
+    
+    // Don't reset current page, just refresh the current state
+    try {
+      await _fetchRestaurants(page: _currentPage);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error refreshing data: $e')),
+        );
+      }
+    }
   }
 
   void _applyFilters() {
@@ -101,6 +111,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       body: Column(
         children: [
@@ -116,55 +127,20 @@ class _RestaurantPageState extends State<RestaurantPage> {
             },
             onSearchSubmitted: (_) => _applyFilters(),
           ),
-          Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ReservationViewAllScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.book_online),
-              label: const Text('My Reservations'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshData,
-              child: RestaurantList(
-                restaurants: _restaurants,
-                scrollController: _scrollController,
-                isLoading: _isLoading,
-                onRefresh: () => _refreshData(),  // Use _refreshData directly
-              ),
+              child: _restaurants.isEmpty && !_isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : RestaurantList(
+                      restaurants: _restaurants,
+                      scrollController: _scrollController,
+                      isLoading: _isLoading,
+                      onRefresh: _refreshData,
+                    ),
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ReservationViewAllScreen(),
-            ),
-          );
-        },
-        label: const Text('My Reservations'),
-        icon: const Icon(Icons.book_online),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
       ),
     );
   }
@@ -176,3 +152,4 @@ class _RestaurantPageState extends State<RestaurantPage> {
     super.dispose();
   }
 }
+

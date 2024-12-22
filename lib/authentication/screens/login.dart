@@ -14,9 +14,10 @@ class LoginApp extends StatelessWidget {
       title: 'Login',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.deepPurple,
-        ).copyWith(secondary: Colors.deepPurple[400]),
+        colorScheme: ColorScheme.light(
+          primary: Colors.black,  // Menggunakan warna hitam untuk primary color
+          secondary: Colors.deepPurple[400]!, // Menambahkan warna sekunder
+        ),
       ),
       home: const LoginPage(),
     );
@@ -41,6 +42,8 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
+        backgroundColor: Colors.black,
+        iconTheme: IconThemeData(color: Colors.white),  // Menyesuaikan warna app bar dengan desain
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -101,7 +104,6 @@ class _LoginPageState extends State<LoginPage> {
                       final username = _usernameController.text;
                       final password = _passwordController.text;
 
-                      // contoh pakai URL Production
                       final response = await request.login(
                         "https://southfeast-production.up.railway.app/auth/api/login/",
                         {
@@ -111,10 +113,11 @@ class _LoginPageState extends State<LoginPage> {
                       );
 
                       if (request.loggedIn) {
-                        // Sukses login
                         final message = response['message'];
+                        final user_id = response['id'];
                         final uname = response['username'];
                         final bool isStaff = response['is_staff'] ?? false;
+                        print("User ID: $user_id, Username: $uname, isStaff: $isStaff");
 
                         if (!mounted) return;
                         Navigator.pushReplacement(
@@ -124,6 +127,7 @@ class _LoginPageState extends State<LoginPage> {
                               isStaff: isStaff,
                               isAuthenticated: true,
                               username: uname,
+                              userID: user_id,
                             ),
                           ),
                         );
@@ -136,7 +140,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           );
                       } else {
-                        // Gagal login
                         if (!mounted) return;
                         showDialog(
                           context: context,
@@ -158,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Colors.black,  // Tombol menggunakan warna hitam
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                     ),
                     child: const Text('Login'),
@@ -176,7 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Text(
                       'Don\'t have an account? Register',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Colors.black,  // Menyesuaikan dengan warna tombol
                         fontSize: 16.0,
                       ),
                     ),

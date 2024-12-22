@@ -15,13 +15,15 @@ class RestaurantDetailScreen extends StatefulWidget {
   final bool isStaff;
   final bool isAuthenticated;
   final VoidCallback? onRefresh;
+  final int? userID;
 
   const RestaurantDetailScreen({
     Key? key, 
     required this.restaurant,
     this.isStaff = false,
-    this.isAuthenticated = true,
+    this.isAuthenticated = false,
     this.onRefresh,
+    this.userID,
   }) : super(key: key);
 
   @override
@@ -333,28 +335,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        menuItems: MenuConfig.getMenuItems(
-          isStaff: widget.isStaff,
-          isAuthenticated: widget.isAuthenticated,
-          username: null,
-        ),
-        selectedIndex: _selectedIndex,
-        onTap: (index) {
-          if (index != _selectedIndex) {
-            Navigator.pop(context);
-          }
-        },
-        isAuthenticated: widget.isAuthenticated,
-        onAuthCheck: (context, item) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-          );
-        },
-      ),
-      extendBody: true,
+      )
     );
   }
 
